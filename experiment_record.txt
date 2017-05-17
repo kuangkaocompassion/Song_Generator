@@ -1,0 +1,128 @@
+實驗紀錄
+[2017.05.17-1]
+- PARAMETERS
+num_of_layer = 2
+learning_rate = 0.001
+training_epochs = 50
+display_step = 1
+n_input = 10 
+batch_size = 100
+n_hidden = 512
+
+-RESULTS
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 0
+AVGAccuracy_after_an_epoch: 0.06951765452481928
+AVGLoss_after_an_epoch 3.598322614526872
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 1
+AVGAccuracy_after_an_epoch: 0.07838931644109176
+AVGLoss_after_an_epoch 3.4268344132475153
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 2
+AVGAccuracy_after_an_epoch: 0.0822480588439053
+AVGLoss_after_an_epoch 3.4168274778420304
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 3
+AVGAccuracy_after_an_epoch: 0.08443582801085726
+AVGLoss_after_an_epoch 3.4122335070890153
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 4
+AVGAccuracy_after_an_epoch: 0.08540912694317786
+AVGLoss_after_an_epoch 3.4077289907404515
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 5
+AVGAccuracy_after_an_epoch: 0.08813091823277701
+AVGLoss_after_an_epoch 3.403740516518027
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 6
+AVGAccuracy_after_an_epoch: 0.0891645099553797
+AVGLoss_after_an_epoch 3.4000751555325346
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 7
+AVGAccuracy_after_an_epoch: 0.08914728339803209
+AVGLoss_after_an_epoch 3.3965083688215176
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 8
+AVGAccuracy_after_an_epoch: 0.09198104738900366
+AVGLoss_after_an_epoch 3.3930390435595843
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 9
+AVGAccuracy_after_an_epoch: 0.09285960037623829
+AVGLoss_after_an_epoch 3.3893042372589375
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 10
+AVGAccuracy_after_an_epoch: 0.09405684403266555
+AVGLoss_after_an_epoch 3.385853959813804
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 11
+AVGAccuracy_after_an_epoch: 0.09462531966467698
+AVGLoss_after_an_epoch 3.3816495518762424
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 12
+AVGAccuracy_after_an_epoch: 0.09665804995026546
+AVGLoss_after_an_epoch 3.376920182370195
+###########################
+
+[2017.05.17-2]
+- CHANGE
+learning_rate: 0.001 -> 0.01
+
+- PARAMETERS
+num_of_layer = 2
+learning_rate = 0.01
+training_epochs = 50
+display_step = 1
+n_input = 10 
+batch_size = 100
+n_hidden = 512
+
+-RESULTS
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 0
+AVGAccuracy_after_an_epoch: 0.06850128939967284
+AVGLoss_after_an_epoch 3.7502722154908095
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 1
+AVGAccuracy_after_an_epoch: 0.07757966968003888
+AVGLoss_after_an_epoch 3.425692625234704
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 2
+AVGAccuracy_after_an_epoch: 0.07992247755348067
+AVGLoss_after_an_epoch 3.421410470045814
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 3
+AVGAccuracy_after_an_epoch: 0.08192936810251714
+AVGLoss_after_an_epoch 3.418798651190075
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 4
+AVGAccuracy_after_an_epoch: 0.0828079211507169
+AVGLoss_after_an_epoch 3.4168731917809247
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 5
+AVGAccuracy_after_an_epoch: 0.08550387268451193
+AVGLoss_after_an_epoch 3.413758284259109
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 6
+AVGAccuracy_after_an_epoch: 0.08484926458502719
+AVGLoss_after_an_epoch 3.41173696969728
+=====PER EPOCH FINISHED=====
+Number_of_Epoch: 7
+AVGAccuracy_after_an_epoch: 0.08613264090144922
+AVGLoss_after_an_epoch 3.410107365977035
+
+-NOTE
+it’s not caused by “learning_rate”
+
+[2017.05.17-3]
+- CHANGE
+n_hidden : 512 -> 256
+
+- PARAMETERS
+num_of_layer = 2
+learning_rate = 0.001
+training_epochs = 50
+display_step = 1
+n_input = 10 
+batch_size = 100
+n_hidden = 

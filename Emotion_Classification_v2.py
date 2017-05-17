@@ -29,9 +29,7 @@ training_epochs = 50
 display_step = 1
 n_input = 10 
 batch_size = 100
-
-# number of units in RNN cell
-n_hidden = 512
+n_hidden = 256
 
 # tf Graph input
 x = tf.placeholder("float", [None, n_input, 1])

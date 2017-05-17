@@ -71,10 +71,10 @@ def RNN(x, weights, biases, layer):
 
     # there are n_input outputs but
     # we only want the last output
-    return tf.matmul(outputs[-1], weights['out']) + biases['out'] , outputs
+    return tf.matmul(outputs[-1], weights['out']) + biases['out'] 
 
 
-pred, outputs = RNN(x, weights, biases, layer=num_of_layer)
+pred = RNN(x, weights, biases, layer=num_of_layer)
 
 # Loss and optimizer
 softmax_result = tf.nn.softmax(logits=pred)
@@ -113,7 +113,7 @@ with tf.Session() as session:
                 symbols_out_onehot[count][instance-1] = 1.0
                 count += 1
             
-            _, acc, loss, correct_portion, outs = session.run([optimizer, accuracy, cost, correct_pred, outputs], \
+            _, acc, loss, correct_portion = session.run([optimizer, accuracy, cost, correct_pred], \
                                                     feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
             acc_total += acc
             loss_total += loss

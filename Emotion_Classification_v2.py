@@ -24,7 +24,7 @@ classification_number = 40
 
 # Parameters
 num_of_layer = 2
-learning_rate = 0.001
+learning_rate = 0.01
 training_epochs = 50
 display_step = 1
 n_input = 10 

@@ -15,7 +15,7 @@ from collections import defaultdict
 # FILENAME: Emoticons, Sentence
 # UNK: Unknown word 
 FILENAME = 'emoticons_sentence.csv'
-VOCAB_SIZE = 20000
+VOCAB_SIZE = 4000
 limit_length = 10
 UNK = 'unk'
 
@@ -57,11 +57,15 @@ def pad_seq(seq, lookup, maxlen):
     return indices + [0]*(maxlen - len(seq))
 
 def index_token(tokens , vocab_size):
+	# get frequency distribution
+    freq_dist = nltk.FreqDist(itertools.chain(*tokens))
+    # get vocabulary of 'vocab_size' most used words
+    vocab = freq_dist.most_common(vocab_size)
     # index2word
-    index2word = ['_'] + [UNK] + [ i for i in tokens ]
+    index2word = ['_'] + [UNK] + [ token[0] for token in vocab ]
     # word2index
     word2index = dict([(w,i) for i,w in enumerate(index2word)] )
-    return index2word, word2index
+    return index2word, word2index, vocab
 
 def zero_pad(qtokenized, w2idx, upperbound):
     # num of rows
@@ -155,7 +159,6 @@ def process_data():
 
 	print('\n>> Filter lines from lines')
 	lines, emoticons = filter_lines(lines, emoticons)
-	
 	print("=====info: filtered lines=====")
 	print("sample lines:", lines[0:3])
 
@@ -165,22 +168,17 @@ def process_data():
 	print('\n>> Filtered out lines with too many tokens')
 	input_tokenized, emoticons = reduce_size(input_tokenized, emoticons, limit_length)
 
-	print("=====info: tlkenized lines=====")
-	print("Number of sentences:", len(input_tokenized))
-	print("Number of tokens:", len(input_tokens))
-	print(input_tokenized[120:123])
-
 	print('\n >> Index2words AND Word2Index')
-	idx2w, w2idx = index_token( input_tokens, vocab_size=VOCAB_SIZE)
+	idx2w, w2idx, tokens_freq = index_token( input_tokens, vocab_size=VOCAB_SIZE)
 	print("=====info: index2word, word2index=====")
-	
-	
+	print("number of lines:", len(input_tokenized))
+	print("number of tokens:", len(tokens_freq))
+	print("sample tokenized lines:", input_tokenized[120: 123])
 
 	print('\n >> Zero Padding')
 	idx_input = zero_pad(input_tokenized, w2idx,upperbound=limit_length)
 	print("===original===\n", input_tokenized[120:123])
 	print("===idx_input===\n", idx_input[120:123])
-	print("---"*15)
 
 	print('\n >> Number of sentences with many zero')
 
@@ -195,7 +193,7 @@ def process_data():
 			num_ten += 1
 		if count_space >5:
 			num_twenty += 1
-	print("0 ~ 5zeros:", num_ten,";", float(num_ten)*100/float(len(idx_input)),"%")
+	print("1 ~ 5 zeros:", num_ten,";", float(num_ten)*100/float(len(idx_input)),"%")
 	print("5 up zeros:", num_twenty, ";",float(num_twenty)*100/float(len(idx_input)),"%")
 
 
@@ -209,6 +207,7 @@ def process_data():
 	        	'w2idx' : w2idx,
 	        	'idx2w' : idx2w,
 	        	'emoticons': emoticons,
+	        	'tokens_freq': tokens_freq,
 	        	}
 
 	# write to disk : data control dictionaries

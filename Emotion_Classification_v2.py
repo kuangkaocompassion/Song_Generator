@@ -24,7 +24,7 @@ classification_number = 40
 
 # Parameters
 num_of_layer = 3
-learning_rate = 0.001
+learning_rate = 0.0001
 training_epochs = 50
 display_step = 1
 n_input = 10 
@@ -93,6 +93,8 @@ init = tf.global_variables_initializer()
 
 # Launch the graph
 with tf.Session() as session:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     session.run(init)
     number_of_epoch = 0
 

@@ -27,7 +27,7 @@ num_of_layer = 2
 learning_rate = 0.01
 training_epochs = 50
 display_step = 1
-n_input = 10 
+n_input = 30 
 batch_size = 100
 n_hidden = 128
 

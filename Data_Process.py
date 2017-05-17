@@ -16,7 +16,7 @@ from collections import defaultdict
 # UNK: Unknown word 
 FILENAME = 'emoticons_sentence.csv'
 VOCAB_SIZE = 20000
-limit_length = 10
+limit_length = 30
 UNK = 'unk'
 
 # ===== Conditions =====

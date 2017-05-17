@@ -29,7 +29,7 @@ training_epochs = 50
 display_step = 1
 n_input = 10 
 batch_size = 100
-n_hidden = 256
+n_hidden = 128
 
 # tf Graph input
 x = tf.placeholder("float", [None, n_input, 1])

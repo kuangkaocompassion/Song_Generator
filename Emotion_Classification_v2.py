@@ -119,8 +119,8 @@ with tf.Session() as session:
                                                     feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
             acc_total += acc
             loss_total += loss
-            print("num_of_batch:",number_of_batch)
-        print("=====ONE EPOCH FINISHED=====")
+            # print("num_of_batch:",number_of_batch)
+        print("=====PER EPOCH FINISHED=====")
         print("Number_of_Epoch:", number_of_epoch)
         print("AVGAccuracy_after_an_epoch:", float(acc_total)/float(total_num_of_epochs))
         print("AVGLoss_after_an_epoch", float(loss_total)/float(total_num_of_epochs))

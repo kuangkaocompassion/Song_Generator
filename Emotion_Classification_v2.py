@@ -23,12 +23,12 @@ training_data = idx_input
 classification_number = 40
 
 # Parameters
-num_of_layer = 3
+num_of_layer = 2
 learning_rate = 0.0001
 training_epochs = 50
 display_step = 1
 n_input = 10 
-batch_size = 200
+batch_size = 100
 
 # number of units in RNN cell
 n_hidden = 1024

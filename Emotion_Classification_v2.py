@@ -31,7 +31,7 @@ n_input = 10
 batch_size = 100
 
 # number of units in RNN cell
-n_hidden = 1024
+n_hidden = 512
 
 # tf Graph input
 x = tf.placeholder("float", [None, n_input, 1])

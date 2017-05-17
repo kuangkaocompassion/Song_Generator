@@ -169,6 +169,7 @@ def process_data():
 	print("number of lines:", len(input_tokenized))
 	print("number of tokens:", len(tokens_freq))
 	print("sample tokenized lines:", input_tokenized[120: 123])
+	print("sample tokens:", tokens_freq[0:20])
 
 	print('\n >> Zero Padding')
 	idx_input = zero_pad(input_tokenized, w2idx,upperbound=limit_length)

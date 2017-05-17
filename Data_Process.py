@@ -21,14 +21,8 @@ UNK = 'unk'
 
 # ===== Conditions =====
 # forbidden_symbol: symbols not allowed in sentence
-# unnessary_information: delete the sentence, if contaning any info in this list 
 
 forbidden_symbol = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~\'0123456789！＠＃＄％＾＆＊（）＿＋＝『』｜「」><`。：，'
-
-unnessary_information = ["作詞", "作曲", "主題曲","編曲","更多更詳盡", "主唱","主題曲"
-					     , "混音師", "混音室", "周杰倫", "羅大佑", "韋禮安",
-					     "唐志中", "監製", "李宗盛", "汪峰", "齊秦", "陳奕迅"]
-
 
 # lines: store all qualified lines
 lines = []
@@ -58,7 +52,8 @@ def pad_seq(seq, lookup, maxlen):
 
 def index_token(tokens , vocab_size):
 	# get frequency distribution
-    freq_dist = nltk.FreqDist(itertools.chain(*tokens))
+    freq_dist = nltk.FreqDist(tokens)
+    # pdb.set_trace()
     # get vocabulary of 'vocab_size' most used words
     vocab = freq_dist.most_common(vocab_size)
     # index2word
@@ -84,7 +79,7 @@ def zero_pad(qtokenized, w2idx, upperbound):
 
 
 def filter_lines(line_seq, emoticon_seq):
-	global forbidden_symbol, unnessary_information
+	global forbidden_symbol
 	new_line_seq = []
 	new_emoticon_seq = []
 	
@@ -180,21 +175,21 @@ def process_data():
 	print("===original===\n", input_tokenized[120:123])
 	print("===idx_input===\n", idx_input[120:123])
 
-	print('\n >> Number of sentences with many zero')
+	print('\n >> Number of sentences with many zero and one')
 
-	num_ten = 0
-	num_twenty = 0
+	num_one_to_five = 0
+	num_bigger_than_five = 0
 	for sentence in idx_input:
-		count_space = 0
+		count_no_meaning = 0
 		for index_num in sentence:
-			if index_num == 0:
-				count_space += 1
-		if count_space > 0 and count_space < 5:
-			num_ten += 1
-		if count_space >5:
-			num_twenty += 1
-	print("1 ~ 5 zeros:", num_ten,";", float(num_ten)*100/float(len(idx_input)),"%")
-	print("5 up zeros:", num_twenty, ";",float(num_twenty)*100/float(len(idx_input)),"%")
+			if index_num == 1 or 0:
+				count_no_meaning += 1
+		if count_no_meaning > 0 and count_no_meaning < 5:
+			num_one_to_five += 1
+		if count_no_meaning >5:
+			num_bigger_than_five += 1
+	print("1 ~ 5  _ and unknown:", num_one_to_five,";", float(num_one_to_five)*100/float(len(idx_input)),"%")
+	print("5 up _ and unknown:", num_bigger_than_five, ";",float(num_bigger_than_five)*100/float(len(idx_input)),"%")
 
 
 	print('\n >> Save numpy arrays to disk')

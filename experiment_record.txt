@@ -116,7 +116,7 @@ it’s not caused by “learning_rate”
 
 [2017.05.17-3]
 - CHANGE
-n_hidden : 512 -> 256
+n_hidden : 512 -> 128
 
 - PARAMETERS
 num_of_layer = 2
@@ -125,4 +125,6 @@ training_epochs = 50
 display_step = 1
 n_input = 10 
 batch_size = 100
-n_hidden = 
+n_hidden = 128
+
+-RESULTS

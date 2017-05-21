@@ -25,7 +25,7 @@ training_data = idx_input
 classification_number = 7
 
 # Parameters
-num_of_layer = 2
+num_of_layer = 1
 learning_rate = 0.01
 training_epochs = 50
 display_step = 1
@@ -40,7 +40,7 @@ exp_info['best_acc'] = 0
 exp_info['output_keep_prob'] = keep_prob
 
 # Experiment Note
-note = "delete two emotions: fear & surprise"
+note = "delete two emotions: fear & surprise; bidirectional lstm"
 
 # Open Record: Experiment Information
 csvin = open('Experiment_Record.csv', 'a')
@@ -52,7 +52,7 @@ y = tf.placeholder("float", [None, classification_number])
 
 # RNN output node weights and biases
 weights = {
-    'out': tf.Variable(tf.random_normal([n_hidden, classification_number]))
+    'out': tf.Variable(tf.random_normal([2*n_hidden, classification_number]))
 }
 biases = {
     'out': tf.Variable(tf.random_normal([classification_number]))

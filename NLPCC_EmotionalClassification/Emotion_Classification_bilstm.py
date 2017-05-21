@@ -78,14 +78,14 @@ def Bi_LSTM(x, weights, biases, layer):
     # x.shape = [10, 200, 1](n_input, batch_size, number_of_tokens in single time step)
     x = tf.unstack(x, n_input, 1)
 
-    # 3-layer RNN each layer has n_hidden units.
-    rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden) for ly in range(layer)])
+    # Forward direction cell
+    lstm_fw_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
+    # Backward direction cell
+    lstm_bw_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
 
-    # generate prediction
-    outputs, states = rnn.static_rnn(rnn_cell, x, dtype=tf.float32)
+    outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 
-    # there are n_input outputs but
-    # we only want the last output
+    # there are n_input outputs but we only want the last output
     return tf.matmul(outputs[-1], weights['out']) + biases['out'] 
 
 

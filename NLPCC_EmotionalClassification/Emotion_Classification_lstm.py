@@ -25,9 +25,9 @@ training_data = idx_input
 classification_number = 7
 
 # Parameters
-num_of_layer = 2
+num_of_layer = 3
 learning_rate = 0.01
-training_epochs = 100
+training_epochs = 60
 display_step = 1
 n_input = exp_info['limit_length'] 
 batch_size = 100

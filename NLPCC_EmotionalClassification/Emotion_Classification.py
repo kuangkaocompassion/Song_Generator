@@ -26,7 +26,7 @@ classification_number = 8
 
 # Parameters
 num_of_layer = 2
-learning_rate = 0.001
+learning_rate = 0.01
 training_epochs = 50
 display_step = 1
 n_input = exp_info['limit_length'] 
@@ -38,6 +38,9 @@ exp_info['learning_rate'] = learning_rate
 exp_info['num_hidden_states'] = n_hidden
 exp_info['best_acc'] = 0
 exp_info['output_keep_prob'] = keep_prob
+
+# Experiment Note
+note = "best learning rate = 0.01;"
 
 # Open Record: Experiment Information
 csvin = open('Experiment_Record.csv', 'a')
@@ -147,6 +150,6 @@ with tf.Session() as session:
                            exp_info['num_hidden_states'],
                            exp_info['output_keep_prob'],
                            exp_info['best_acc'],
-                           "change learning rate"
+                           note
                            ])
     csvin.close()

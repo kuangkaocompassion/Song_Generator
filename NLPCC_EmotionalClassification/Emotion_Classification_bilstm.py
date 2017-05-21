@@ -27,7 +27,7 @@ classification_number = 7
 # Parameters
 num_of_layer = 2
 learning_rate = 0.01
-training_epochs = 50
+training_epochs = 100
 display_step = 1
 n_input = exp_info['limit_length'] 
 batch_size = 100

@@ -16,7 +16,8 @@ from collections import defaultdict
 # UNK: Unknown word 
 FILENAME = 'Training_data_for_Emotion_Classification.csv'
 # anger, disgust, fear, happiness, like, sadness, surprise
-EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':3, 'happiness':4, 'like':5, 'sadness':6, 'surprise':7}
+EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':2, 'happiness':3, 'like':4, 'sadness':5, 'surprise':6}
+FILTERED_EMO = ['fear', 'surprise']
 VOCAB_SIZE = 5000
 limit_length = 30
 UNK = 'unk'
@@ -151,13 +152,32 @@ def ration_of_unk(sentence_batch, length=limit_length):
 			num_above_half += 1
 	return float(num_below_half)*100/num_total_sentence, float(num_above_half)*100/num_total_sentence
 
+def filter_emotions(sequence, emotion, filter):
+	new_sequence = []
+	new_emoticons = []
+	for num in range(len(sequence)):
+		status = 1
+		for emo in filter:
+			if emotion[num] == EMOTION_DIC[emo]:
+				status = 0
+		if status:
+			new_sequence.append(sequence[num])
+			new_emoticons.append(emotion[num])
+	return new_sequence, new_emoticons
+
 def process_data():
 	
 	print('\n>> Read lines from file')
 	lines, emoticons = read_lines(filename=FILENAME)
 
+	print('\n>> INFO about DataSet')
+	freq_emotion = nltk.FreqDist(emoticons)
+	for emotion in EMOTION_DIC.keys():
+		print(emotion,":", freq_emotion[EMOTION_DIC[emotion]])
+	
 	print('\n>> Filter lines from lines')
 	lines, emoticons = filter_lines(lines, emoticons)
+	lines, emoticons = filter_emotions(lines, emoticons, filter=FILTERED_EMO)
 	print("=====info: filtered lines=====")
 	print("sample lines:", lines[0:3])
 
@@ -195,11 +215,10 @@ def process_data():
 
 
 	print('\n >> Save numpy arrays to disk')
-	# save them
 	np.save('idx_input.npy', idx_input)
 
 
-	# let us now save the necessary dictionaries
+	# save the necessary dictionaries
 	metadata = {
 	        	'w2idx' : w2idx,
 	        	'idx2w' : idx2w,
@@ -211,7 +230,7 @@ def process_data():
 	# write to disk : data control dictionaries
 	with open('metadata.pkl', 'wb') as f:
 		pickle.dump(metadata, f)
-
+	
 def load_data(PATH=''):
     # read data control dictionaries
     with open(PATH + 'metadata.pkl', 'rb') as f:

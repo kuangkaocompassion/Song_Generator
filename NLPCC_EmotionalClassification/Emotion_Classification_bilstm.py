@@ -22,7 +22,7 @@ training_data = idx_input
 
 
 # classification_number: number of emoticons
-classification_number = 8
+classification_number = 7
 
 # Parameters
 num_of_layer = 2
@@ -31,7 +31,7 @@ training_epochs = 50
 display_step = 1
 n_input = exp_info['limit_length'] 
 batch_size = 100
-n_hidden = 32
+n_hidden = 128
 keep_prob = 0 # DROPOUT ratio
 exp_info['num_layers'] = num_of_layer
 exp_info['learning_rate'] = learning_rate
@@ -40,7 +40,7 @@ exp_info['best_acc'] = 0
 exp_info['output_keep_prob'] = keep_prob
 
 # Experiment Note
-note = "best learning rate = 0.01;"
+note = "delete two emotions: fear & surprise"
 
 # Open Record: Experiment Information
 csvin = open('Experiment_Record.csv', 'a')
@@ -73,13 +73,12 @@ def rand_batch_gen(x, y):
     return np.array(new_x), np.array(new_y)
 
 
-def RNN(x, weights, biases, layer):
+def Bi_LSTM(x, weights, biases, layer):
 
     # x.shape = [10, 200, 1](n_input, batch_size, number_of_tokens in single time step)
     x = tf.unstack(x, n_input, 1)
 
     # 3-layer RNN each layer has n_hidden units.
-    # cell = rnn.DropoutWrapper(rnn.BasicLSTMCell(n_hidden), output_keep_prob = keep_prob)
     rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden) for ly in range(layer)])
 
     # generate prediction
@@ -90,7 +89,7 @@ def RNN(x, weights, biases, layer):
     return tf.matmul(outputs[-1], weights['out']) + biases['out'] 
 
 
-pred = RNN(x, weights, biases, layer=num_of_layer)
+pred = Bi_LSTM(x, weights, biases, layer=num_of_layer)
 
 # Loss and optimizer
 softmax_result = tf.nn.softmax(logits=pred)

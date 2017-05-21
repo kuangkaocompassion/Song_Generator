@@ -1,0 +1,12 @@
+<TrainData>
+  <weibo id="1" emotion-type1="none" emotion-type2="none">
+    <sentence id="1" opinionated="N">回复@王羊羊的微博:是，要的就是安静的生存环境，而且，到北京五环25分钟车程，938离我住处只有300米，饮食一条街更是北京饮食街的翻版，应有尽有。</sentence>
+    <sentence id="2" opinionated="N">//@王羊羊的微博:廊坊是个好地方，紧邻京津，有点闹中取静的意思。</sentence>
+  </weibo>
+  <weibo id="2" emotion-type1="none" emotion-type2="none">
+    <sentence id="1" opinionated="N">录入。</sentence>
+    <sentence id="2" opinionated="Y" emotion-1-type="like" emotion-2-type="none">//@广州Les_go:我捻依出戏真系好多les噶最爱咯。</sentence>
+    <sentence id="3" opinionated="Y" emotion-1-type="like" emotion-2-type="none">好写实同时都好向往。</sentence>
+    <sentence id="4" opinionated="N">难得一部反映les噶情感同面临噶困难噶一出粤语电影。</sentence>
+  </weibo>
+</TrainData>

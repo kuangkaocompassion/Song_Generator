@@ -14,10 +14,15 @@ from collections import defaultdict
 # ===== Files =====
 # FILENAME: Emoticons, Sentence
 # UNK: Unknown word 
-FILENAME = 'emoticons_sentence.csv'
-VOCAB_SIZE = 20000
+FILENAME = 'Training_data_for_Emotion_Classification.csv'
+# anger, disgust, fear, happiness, like, sadness, surprise
+EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':3, 'happiness':4, 'like':5, 'sadness':6, 'surprise':7}
+VOCAB_SIZE = 5000
 limit_length = 30
 UNK = 'unk'
+exp_info = dict()
+exp_info['vocab_size'] = VOCAB_SIZE
+exp_info['limit_length'] = limit_length 
 
 # ===== Conditions =====
 # forbidden_symbol: symbols not allowed in sentence
@@ -32,7 +37,6 @@ lines = []
 # [pad_seq]: subfunction for "zero_pad"
 # [index_token]: create "index2word", "word2index"
 # [zero_pad]: adding 0(index to ' ') to sentence, whose length is under 10
-# [count_unk]: count how many unknown word in a tokenized sentence
 # [filter_lines]: test if the line is qualified; if it is, then return new_line; if not, return 0
 # [segmentation_to_token]: make segmentation to list
 # [read_lines]: read in emoticons and sentence from filename
@@ -60,7 +64,7 @@ def index_token(tokens , vocab_size):
     index2word = ['_'] + [UNK] + [ token[0] for token in vocab ]
     # word2index
     word2index = dict([(w,i) for i,w in enumerate(index2word)] )
-    return index2word, word2index, vocab
+    return index2word, word2index, vocab, len(freq_dist)
 
 def zero_pad(qtokenized, w2idx, upperbound):
     # num of rows
@@ -92,22 +96,7 @@ def filter_lines(line_seq, emoticon_seq):
 				new_line = ''.join(temp)
 			new_line_seq.append(new_line)
 			new_emoticon_seq.append(emoticon_seq[line_num])
-
 	return new_line_seq, new_emoticon_seq
-
-def count_unk(sequence):
-	total_num_of_words = 0
-	total_num_of_unk = 0
-	for line in sequence:
-		for token in line:
-			if token == 0:
-				break
-			else:
-				total_num_of_words += 1
-				if token == 1:
-					total_num_of_unk += 1
-	return float(total_num_of_unk*100)/float(total_num_of_words)
-
 
 def segmentation_to_token(sequence):
 	new_sequence = []
@@ -135,7 +124,7 @@ def read_lines(filename):
 		emoticon_list = []
 		for line in csvfile:
 			sentence_list.append(line[1])
-			emoticon_list.append(int(line[0]))
+			emoticon_list.append(EMOTION_DIC[line[0]])
 	return sentence_list, emoticon_list
 
 def reduce_size(TokenizedLines, emoticons, upperbound):
@@ -146,6 +135,21 @@ def reduce_size(TokenizedLines, emoticons, upperbound):
 			new_input_tokenized.append(TokenizedLines[num])
 			new_emoticons.append(emoticons[num])
 	return new_input_tokenized, new_emoticons
+
+def ration_of_unk(sentence_batch, length=limit_length):
+	num_below_half = 0
+	num_above_half = 0
+	num_total_sentence = len(sentence_batch)
+	for sentence in sentence_batch:
+		count_no_meaning = 0
+		for index_num in sentence:
+			if index_num == 1:
+				count_no_meaning += 1
+		if count_no_meaning > 0 and count_no_meaning < float(limit_length)/2.0:
+			num_below_half += 1
+		if count_no_meaning > float(limit_length)/2.0:
+			num_above_half += 1
+	return float(num_below_half)*100/num_total_sentence, float(num_above_half)*100/num_total_sentence
 
 def process_data():
 	
@@ -159,38 +163,35 @@ def process_data():
 
 	print('\n>> Tokenize every lines')
 	input_tokenized, input_tokens = segmentation_to_token(lines)
-
+	# pdb.set_trace()
 	print('\n>> Filtered out lines with too many tokens')
 	input_tokenized, emoticons = reduce_size(input_tokenized, emoticons, limit_length)
+	# pdb.set_trace()
 
 	print('\n >> Index2words AND Word2Index')
-	idx2w, w2idx, tokens_freq = index_token( input_tokens, vocab_size=VOCAB_SIZE)
+	idx2w, w2idx, tokens_freq, origi_num_tokens = index_token( input_tokens, vocab_size=VOCAB_SIZE)
 	print("=====info: index2word, word2index=====")
-	print("number of lines:", len(input_tokenized))
-	print("number of tokens:", len(tokens_freq))
+	print("number of lines:", len(input_tokenized), "original:15690")
+	print("number of reduced tokens:", len(tokens_freq))
 	print("sample tokenized lines:", input_tokenized[120: 123])
-	print("sample tokens:", tokens_freq[0:20])
+	print("ration of tokens left:", float(len(tokens_freq))*100/float(origi_num_tokens), "%")
+	# print("tokens:", tokens_freq)
+	exp_info['number_of_lines'] = len(input_tokenized)
+	exp_info['tokens_left'] = float(len(tokens_freq))*100/float(origi_num_tokens)
+	exp_info['least_frequency'] = tokens_freq[-1][1]
 
 	print('\n >> Zero Padding')
 	idx_input = zero_pad(input_tokenized, w2idx,upperbound=limit_length)
 	print("===original===\n", input_tokenized[120:123])
 	print("===idx_input===\n", idx_input[120:123])
 
-	print('\n >> Number of sentences with many zero and one')
+	print('\n >> Number of sentences with unk')
 
-	num_one_to_five = 0
-	num_bigger_than_five = 0
-	for sentence in idx_input:
-		count_no_meaning = 0
-		for index_num in sentence:
-			if index_num == 1 or 0:
-				count_no_meaning += 1
-		if count_no_meaning > 0 and count_no_meaning < 5:
-			num_one_to_five += 1
-		if count_no_meaning >5:
-			num_bigger_than_five += 1
-	print("1 ~ 5  _ and unknown:", num_one_to_five,";", float(num_one_to_five)*100/float(len(idx_input)),"%")
-	print("5 up _ and unknown:", num_bigger_than_five, ";",float(num_bigger_than_five)*100/float(len(idx_input)),"%")
+	below_half, above_half = ration_of_unk(idx_input)
+	print("Sentence Ratio: num of unk below half num of words:", below_half, "%")
+	print("Sentence Ratio: num of unk above half num of words:", above_half, "%")
+	exp_info['ration_unk_below_half'] = below_half
+	exp_info['ratio_unk_above_half'] = above_half
 
 
 	print('\n >> Save numpy arrays to disk')
@@ -204,6 +205,7 @@ def process_data():
 	        	'idx2w' : idx2w,
 	        	'emoticons': emoticons,
 	        	'tokens_freq': tokens_freq,
+	        	'exp_info': exp_info,
 	        	}
 
 	# write to disk : data control dictionaries

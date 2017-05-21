@@ -1,5 +1,10 @@
 ## DATA SET 
-Set one: Emoji data set   
-Set two: NLPCC data set    
+* Emoji data set   
+* NLPCC data set    
 ## RUNNING STEPS
 
+#### NLPCC
+* Extract All Lines and Emotion Tag from files
+```shell
+$ python
+```

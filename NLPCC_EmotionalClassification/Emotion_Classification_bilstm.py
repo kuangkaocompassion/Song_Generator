@@ -31,7 +31,7 @@ training_epochs = 50
 display_step = 1
 n_input = exp_info['limit_length'] 
 batch_size = 100
-n_hidden = 128
+n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
 exp_info['num_layers'] = num_of_layer
 exp_info['learning_rate'] = learning_rate
@@ -40,7 +40,7 @@ exp_info['best_acc'] = 0
 exp_info['output_keep_prob'] = keep_prob
 
 # Experiment Note
-note = "delete two emotions: fear & surprise; bidirectional lstm"
+note = "bidirectional lstm: delete two emotions(fear & surprise); change n_hidden"
 
 # Open Record: Experiment Information
 csvin = open('Experiment_Record.csv', 'a')

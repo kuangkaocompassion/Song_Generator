@@ -25,7 +25,7 @@ training_data = idx_input
 classification_number = 7
 
 # Parameters
-num_of_layer = 1
+num_of_layer = 2
 learning_rate = 0.01
 training_epochs = 50
 display_step = 1
@@ -79,9 +79,9 @@ def Bi_LSTM(x, weights, biases, layer):
     x = tf.unstack(x, n_input, 1)
 
     # Forward direction cell
-    lstm_fw_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
+    lstm_fw_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden) for ly in range(layer)])
     # Backward direction cell
-    lstm_bw_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
+    lstm_bw_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden) for ly in range(layer)])
 
     outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 

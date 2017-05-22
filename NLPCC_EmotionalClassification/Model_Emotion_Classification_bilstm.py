@@ -153,8 +153,10 @@ with tf.Session() as session:
         for instance in testY_all:
             symbols_out_onehot_test[count][instance] = 1.0
             count += 1
-        acc_test = session.run( [accuracy], feed_dict={x: symbols_in_keys_test, y: symbols_out_onehot_test})
+        acc_test, loss_test = session.run( [accuracy, cost], feed_dict={x: symbols_in_keys_test, y: symbols_out_onehot_test})
         print("Accuracy:", acc_test)
+        print("Loss:", loss_test)
+        print("\n")
 
     csvin_writer.writerow([time.strftime("%Y.%m.%d"),
                            exp_info['epchs'],

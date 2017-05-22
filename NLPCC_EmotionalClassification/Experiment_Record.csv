@@ -14,3 +14,4 @@ DATE,EPOCHS, RATIO OF TOKENS LEFT,LEAST FREQUENCY OF TOKENS, NUM OF LINES, LAYER
 2017.05.21,50,15.627930236919422%,5,14658,2,0.01,256,0,0.4811643684563571,bidirectional lstm: delete two emotions(fear & surprise); change n_hidden
 2017.05.22,100,15.627930236919422%,5,14658,2,0.01,256,0,0.4311643698035854,bidirectional lstm: delete two emotions(fear & surprise); change n_hidden
 2017.05.22,100,15.627930236919422%,5,14658,2,0.01,256,0,0.4946575158671157, change to AdamOptimizer
+2017.05.22,100,15.627930236919422%,5,14658,2,0.001,256,0,0.9052055000442348,bidirectional: learning_rate = 0.001; AdamOptimizer

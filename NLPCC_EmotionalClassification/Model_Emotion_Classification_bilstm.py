@@ -6,9 +6,22 @@ import collections
 import time
 import Data_Process
 import pdb
+import pickle
 from random import sample
 import csv
 """
+USE
+"""
+EMOTION_DIC = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4:'like', 5:'sadness', 6:'surprise'}
+with open('USE_metadata.pkl', 'rb') as f:
+        use_metadata = pickle.load(f)
+use_sentences = use_metadata['USE_sentences']
+use_idx_sentences = use_metadata['USE_input']
+use_csvin = open('jay_lyrics_withEMO.csv', 'w')
+use_csvin_writer = csv.writer(use_csvin)
+
+"""
+TRAINING
 metadata: three list (word2index, index2words, emoticons)
 idx_input: tokenized lines
 """
@@ -26,7 +39,7 @@ testing_data = idx_input[12000:]
 classification_number = 7
 
 # Parameters
-flag = 'TRAIN'
+flag = 'USE'
 num_of_layer = 2
 learning_rate = 0.001
 training_epochs = 100
@@ -174,18 +187,17 @@ if flag == 'TRAIN':
                                note
                                ])
         csvin.close()
-# if flag == 'USE':
-#     with 
-
-
-
-
-
-
-
-
-
-
-
-
-
+if flag == 'USE':
+    saver = tf.train.Saver()
+    with tf.Session() as sess:
+        saver.restore(sess, 'my-model-100')
+        for num_line in range(len(use_sentences)):
+            symbols_in_keys_use = np.reshape(use_idx_sentences[num_line], [-1, n_input, 1])
+            softmax_result_use = sess.run( [softmax_result], feed_dict={x: symbols_in_keys_use})
+            # print(type(softmax_result_use[0][0]))
+            use_csvin_writer.writerow([
+                EMOTION_DIC[softmax_result_use[0][0].argmax()],
+                ''.join(use_sentences[num_line])
+                ])
+    use_csvin.close()
+        

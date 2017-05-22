@@ -157,7 +157,7 @@ with tf.Session() as session:
         print("Accuracy:", acc_test)
         print("Loss:", loss_test)
         print("\n")
-
+    saver.save(session, 'my-model', global_step=training_epochs)
     csvin_writer.writerow([time.strftime("%Y.%m.%d"),
                            exp_info['epchs'],
                            "{}%".format(exp_info['tokens_left']),

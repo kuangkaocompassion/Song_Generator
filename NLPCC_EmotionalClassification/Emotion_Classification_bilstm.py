@@ -26,12 +26,12 @@ classification_number = 7
 
 # Parameters
 num_of_layer = 2
-learning_rate = 0.01
+learning_rate = 0.001
 training_epochs = 100
 display_step = 1
 n_input = exp_info['limit_length']
 batch_size = 100
-n_hidden = 512
+n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
 exp_info['epchs'] = training_epochs
 exp_info['num_layers'] = num_of_layer

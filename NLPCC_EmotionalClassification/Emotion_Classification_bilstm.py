@@ -29,7 +29,7 @@ num_of_layer = 2
 learning_rate = 0.01
 training_epochs = 100
 display_step = 1
-n_input = exp_info['limit_length'] 
+n_input = exp_info['limit_length']
 batch_size = 100
 n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
@@ -87,7 +87,7 @@ def Bi_LSTM(x, weights, biases, layer):
     outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 
     # there are n_input outputs but we only want the last output
-    return tf.matmul(outputs[-1], weights['out']) + biases['out'] 
+    return tf.matmul(outputs[-1], weights['out']) + biases['out']
 
 
 pred = Bi_LSTM(x, weights, biases, layer=num_of_layer)
@@ -96,7 +96,7 @@ pred = Bi_LSTM(x, weights, biases, layer=num_of_layer)
 softmax_result = tf.nn.softmax(logits=pred)
 cost_in_one_batch = tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
 # Model evaluation
 correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
@@ -117,7 +117,7 @@ with tf.Session() as session:
         loss_total = 0
         trainX_all, trainY_all = rand_batch_gen(training_data, emoticons)
         num_of_sentences = float(len(trainX_all))
-        total_num_of_epochs = int(num_of_sentences//batch_size) 
+        total_num_of_epochs = int(num_of_sentences//batch_size)
 
         for number_of_batch in range(total_num_of_epochs):
             symbols_in_keys = trainX_all[number_of_batch * batch_size : (number_of_batch+1) * (batch_size)]
@@ -128,7 +128,7 @@ with tf.Session() as session:
             for instance in trainY_all[number_of_batch * batch_size: (number_of_batch+1) * (batch_size)]:
                 symbols_out_onehot[count][instance] = 1.0
                 count += 1
-            
+
             _, acc, loss, correct_portion = session.run([optimizer, accuracy, cost, correct_pred], \
                                                     feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
             acc_total += acc
@@ -142,7 +142,7 @@ with tf.Session() as session:
             exp_info['best_acc'] = float(acc_total)/float(total_num_of_epochs)
         number_of_epoch += 1
     csvin_writer.writerow([time.strftime("%Y.%m.%d"),
-                           exp_info['epchs'], 
+                           exp_info['epchs'],
                            "{}%".format(exp_info['tokens_left']),
                            exp_info['least_frequency'],
                            exp_info['number_of_lines'],

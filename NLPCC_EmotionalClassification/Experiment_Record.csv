@@ -12,3 +12,4 @@ DATE,EPOCHS, RATIO OF TOKENS LEFT,LEAST FREQUENCY OF TOKENS, NUM OF LINES, LAYER
 2017.05.21,50,15.627930236919422%,5,14658,2,0.01,128,0,0.4169862882731712,delete two emotions: fear & surprise; bidirectional lstm
 2017.05.21,50,15.627930236919422%,5,14658,2,0.01,256,0,0.39575341221404403,bidirectional lstm: delete two emotions(fear & surprise); change n_hidden
 2017.05.21,50,15.627930236919422%,5,14658,2,0.01,256,0,0.4811643684563571,bidirectional lstm: delete two emotions(fear & surprise); change n_hidden
+2017.05.22,100,15.627930236919422%,5,14658,2,0.01,256,0,0.4311643698035854,bidirectional lstm: delete two emotions(fear & surprise); change n_hidden

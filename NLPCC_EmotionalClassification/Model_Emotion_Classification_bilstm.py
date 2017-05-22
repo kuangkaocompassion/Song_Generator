@@ -26,6 +26,7 @@ testing_data = idx_input[12000:]
 classification_number = 7
 
 # Parameters
+flag = 'TRAIN'
 num_of_layer = 2
 learning_rate = 0.001
 training_epochs = 100
@@ -108,66 +109,83 @@ accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 init = tf.global_variables_initializer()
 
 # Launch the graph
-with tf.Session() as session:
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
-    session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    session.run(init)
-    number_of_epoch = 0
-    print("START TRAINING")
-    while number_of_epoch < training_epochs:
-        acc_total = 0
-        loss_total = 0
-        trainX_all, trainY_all = rand_batch_gen(training_data, emoticons_train)
-        testX_all, testY_all = testing_data, emoticons_test
-        num_of_sentences = float(len(trainX_all))
-        total_num_of_epochs = int(num_of_sentences//batch_size)
+if flag == 'TRAIN':
+    saver = tf.train.Saver()
+    with tf.Session() as session:
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+        session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        session.run(init)
+        number_of_epoch = 0
+        print("START TRAINING")
+        while number_of_epoch < training_epochs:
+            acc_total = 0
+            loss_total = 0
+            trainX_all, trainY_all = rand_batch_gen(training_data, emoticons_train)
+            testX_all, testY_all = testing_data, emoticons_test
+            num_of_sentences = float(len(trainX_all))
+            total_num_of_epochs = int(num_of_sentences//batch_size)
 
-        for number_of_batch in range(total_num_of_epochs):
-            symbols_in_keys = trainX_all[number_of_batch * batch_size : (number_of_batch+1) * (batch_size)]
-            symbols_in_keys = np.reshape(symbols_in_keys, [-1, n_input, 1])
+            for number_of_batch in range(total_num_of_epochs):
+                symbols_in_keys = trainX_all[number_of_batch * batch_size : (number_of_batch+1) * (batch_size)]
+                symbols_in_keys = np.reshape(symbols_in_keys, [-1, n_input, 1])
 
-            symbols_out_onehot = np.zeros([batch_size, classification_number], dtype=float)
+                symbols_out_onehot = np.zeros([batch_size, classification_number], dtype=float)
+                count = 0
+                for instance in trainY_all[number_of_batch * batch_size: (number_of_batch+1) * (batch_size)]:
+                    symbols_out_onehot[count][instance] = 1.0
+                    count += 1
+
+                _, acc, loss, correct_portion = session.run([optimizer, accuracy, cost, correct_pred], \
+                                                        feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+                acc_total += acc
+                loss_total += loss
+                # print("num_of_batch:",number_of_batch)
+            print("=====PER EPOCH FINISHED=====")
+            print("Number_of_Epoch:", number_of_epoch)
+            print("AVGAccuracy_after_an_epoch:", float(acc_total)/float(total_num_of_epochs))
+            print("AVGLoss_after_an_epoch", float(loss_total)/float(total_num_of_epochs))
+            if float(acc_total)/float(total_num_of_epochs) > exp_info['best_acc']:
+                exp_info['best_acc'] = float(acc_total)/float(total_num_of_epochs)
+            number_of_epoch += 1
+
+            # test
+            print("-"*10 + "TEST" + "-"*10)
+            symbols_in_keys_test = np.reshape(testX_all, [-1, n_input, 1])
+            symbols_out_onehot_test = np.zeros([len(emoticons_test), classification_number], dtype=float)
             count = 0
-            for instance in trainY_all[number_of_batch * batch_size: (number_of_batch+1) * (batch_size)]:
-                symbols_out_onehot[count][instance] = 1.0
+            for instance in testY_all:
+                symbols_out_onehot_test[count][instance] = 1.0
                 count += 1
+            acc_test, loss_test = session.run( [accuracy, cost], feed_dict={x: symbols_in_keys_test, y: symbols_out_onehot_test})
+            print("Accuracy:", acc_test)
+            print("Loss:", loss_test)
+            print("\n")
+        saver.save(session, 'my-model', global_step=training_epochs)
+        csvin_writer.writerow([time.strftime("%Y.%m.%d"),
+                               exp_info['epchs'],
+                               "{}%".format(exp_info['tokens_left']),
+                               exp_info['least_frequency'],
+                               exp_info['number_of_lines'],
+                               exp_info['num_layers'],
+                               exp_info['learning_rate'],
+                               exp_info['num_hidden_states'],
+                               exp_info['output_keep_prob'],
+                               exp_info['best_acc'],
+                               note
+                               ])
+        csvin.close()
+# if flag == 'USE':
+#     with 
 
-            _, acc, loss, correct_portion = session.run([optimizer, accuracy, cost, correct_pred], \
-                                                    feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
-            acc_total += acc
-            loss_total += loss
-            # print("num_of_batch:",number_of_batch)
-        print("=====PER EPOCH FINISHED=====")
-        print("Number_of_Epoch:", number_of_epoch)
-        print("AVGAccuracy_after_an_epoch:", float(acc_total)/float(total_num_of_epochs))
-        print("AVGLoss_after_an_epoch", float(loss_total)/float(total_num_of_epochs))
-        if float(acc_total)/float(total_num_of_epochs) > exp_info['best_acc']:
-            exp_info['best_acc'] = float(acc_total)/float(total_num_of_epochs)
-        number_of_epoch += 1
 
-        # test
-        print("-"*10 + "TEST" + "-"*10)
-        symbols_in_keys_test = np.reshape(testX_all, [-1, n_input, 1])
-        symbols_out_onehot_test = np.zeros([len(emoticons_test), classification_number], dtype=float)
-        count = 0
-        for instance in testY_all:
-            symbols_out_onehot_test[count][instance] = 1.0
-            count += 1
-        acc_test, loss_test = session.run( [accuracy, cost], feed_dict={x: symbols_in_keys_test, y: symbols_out_onehot_test})
-        print("Accuracy:", acc_test)
-        print("Loss:", loss_test)
-        print("\n")
-    saver.save(session, 'my-model', global_step=training_epochs)
-    csvin_writer.writerow([time.strftime("%Y.%m.%d"),
-                           exp_info['epchs'],
-                           "{}%".format(exp_info['tokens_left']),
-                           exp_info['least_frequency'],
-                           exp_info['number_of_lines'],
-                           exp_info['num_layers'],
-                           exp_info['learning_rate'],
-                           exp_info['num_hidden_states'],
-                           exp_info['output_keep_prob'],
-                           exp_info['best_acc'],
-                           note
-                           ])
-    csvin.close()
+
+
+
+
+
+
+
+
+
+
+

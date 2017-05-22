@@ -16,10 +16,11 @@ metadata, idx_input = Data_Process.load_data(PATH='')
 
 dictionary = metadata['w2idx']
 reverse_dictionary = metadata['idx2w']
-emoticons = metadata['emoticons']
+emoticons_train = metadata['emoticons'][0:12000]
+emoticons_test = metadata['emoticons'][12000:]
 exp_info = metadata['exp_info']
-training_data = idx_input
-
+training_data = idx_input[0:12000]
+testing_data = idx_input[12000:]
 
 # classification_number: number of emoticons
 classification_number = 7
@@ -93,6 +94,7 @@ def Bi_LSTM(x, weights, biases, layer):
 pred = Bi_LSTM(x, weights, biases, layer=num_of_layer)
 
 # Loss and optimizer
+
 softmax_result = tf.nn.softmax(logits=pred)
 cost_in_one_batch = tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
@@ -111,11 +113,12 @@ with tf.Session() as session:
     session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     session.run(init)
     number_of_epoch = 0
-
+    print("START TRAINING")
     while number_of_epoch < training_epochs:
         acc_total = 0
         loss_total = 0
-        trainX_all, trainY_all = rand_batch_gen(training_data, emoticons)
+        trainX_all, trainY_all = rand_batch_gen(training_data, emoticons_train)
+        testX_all, testY_all = testing_data, emoticons_test
         num_of_sentences = float(len(trainX_all))
         total_num_of_epochs = int(num_of_sentences//batch_size)
 
@@ -141,6 +144,18 @@ with tf.Session() as session:
         if float(acc_total)/float(total_num_of_epochs) > exp_info['best_acc']:
             exp_info['best_acc'] = float(acc_total)/float(total_num_of_epochs)
         number_of_epoch += 1
+
+        # test
+        print("-"*10 + "TEST" + "-"*10)
+        symbols_in_keys_test = np.reshape(testX_all, [-1, n_input, 1])
+        symbols_out_onehot_test = np.zeros([len(emoticons_test), classification_number], dtype=float)
+        count = 0
+        for instance in testY_all:
+            symbols_out_onehot_test[count][instance] = 1.0
+            count += 1
+        acc_test = session.run( [accuracy], feed_dict={x: symbols_in_keys_test, y: symbols_out_onehot_test})
+        print("Accuracy:", acc_test)
+
     csvin_writer.writerow([time.strftime("%Y.%m.%d"),
                            exp_info['epchs'],
                            "{}%".format(exp_info['tokens_left']),

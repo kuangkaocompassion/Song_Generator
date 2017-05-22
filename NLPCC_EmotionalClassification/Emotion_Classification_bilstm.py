@@ -41,7 +41,7 @@ exp_info['best_acc'] = 0
 exp_info['output_keep_prob'] = keep_prob
 
 # Experiment Note
-note = "bidirectional lstm: delete two emotions(fear & surprise); change n_hidden"
+note = "bidirectional: n_hidden = 512; AdamOptimizer"
 
 # Open Record: Experiment Information
 csvin = open('Experiment_Record.csv', 'a')

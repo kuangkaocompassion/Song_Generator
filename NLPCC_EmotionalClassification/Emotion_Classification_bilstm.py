@@ -33,6 +33,7 @@ n_input = exp_info['limit_length']
 batch_size = 100
 n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
+exp_info['epchs'] = training_epochs
 exp_info['num_layers'] = num_of_layer
 exp_info['learning_rate'] = learning_rate
 exp_info['num_hidden_states'] = n_hidden
@@ -140,7 +141,8 @@ with tf.Session() as session:
         if float(acc_total)/float(total_num_of_epochs) > exp_info['best_acc']:
             exp_info['best_acc'] = float(acc_total)/float(total_num_of_epochs)
         number_of_epoch += 1
-    csvin_writer.writerow([time.strftime("%Y.%m.%d"), 
+    csvin_writer.writerow([time.strftime("%Y.%m.%d"),
+                           exp_info['epchs'], 
                            "{}%".format(exp_info['tokens_left']),
                            exp_info['least_frequency'],
                            exp_info['number_of_lines'],

@@ -10,12 +10,12 @@ import itertools
 import pickle
 import numpy as np
 from collections import defaultdict
-import Data_Process
+import Model_Data_Process
 
-metadata, idx_input = Data_Process.load_data(PATH='')
-w2idx = metadata['w2idx']
+# metadata, idx_input = Model_Data_Process.load_data(PATH='')
+# w2idx = metadata['w2idx']
 UNK = 'unk'
-FILENAME = 'jay_lyrics.csv'
+FILENAME = 'FineTune_Data_Jonathenlee.csv'
 limit_length = 30
 
 def read_lines(filename):
@@ -24,7 +24,7 @@ def read_lines(filename):
 		csvfile = csv.reader(csvfile)
 		sentence_list = []
 		for line in csvfile:
-			sentence_list.append(line[0])
+			sentence_list.append(line[1])
 	return sentence_list
 
 def segmentation_to_token(sequence):

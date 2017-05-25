@@ -11,10 +11,13 @@ import pickle
 import numpy as np
 from collections import defaultdict
 
+METADATA = 'Model_metadata.pkl'
+INDEX_INPUT = 'Model_idx_input.npy'
 # ===== Files =====
 # FILENAME: Emoticons, Sentence
 # UNK: Unknown word 
 FILENAME = 'Training_data_for_Emotion_Classification.csv'
+
 # anger, disgust, fear, happiness, like, sadness, surprise
 EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':2, 'happiness':3, 'like':4, 'sadness':5, 'surprise':6}
 FILTERED_EMO = ['fear', 'surprise']
@@ -215,10 +218,11 @@ def process_data():
 
 
 	print('\n >> Save numpy arrays to disk')
-	np.save('idx_input.npy', idx_input)
+	np.save(INDEX_INPUT, idx_input)
 
 
 	# save the necessary dictionaries
+	pdb.set_trace()
 	metadata = {
 	        	'w2idx' : w2idx,
 	        	'idx2w' : idx2w,
@@ -228,24 +232,28 @@ def process_data():
 	        	}
 
 	# write to disk : data control dictionaries
-	with open('metadata.pkl', 'wb') as f:
+	with open(METADATA, 'wb') as f:
 		pickle.dump(metadata, f)
 	
-def load_data(PATH=''):
+# def load_data(PATH='', METADATA, INDEX_INPUT):
+#     # read data control dictionaries
+#     with open(PATH + METADATA, 'rb') as f:
+#         metadata = pickle.load(f)
+#     # read numpy arrays
+#     idx_input = np.load(PATH + INDEX_INPUT)
+#     return metadata, idx_input
+
+
+def load_data(METADATA, INDEX_INPUT,PATH=''):
     # read data control dictionaries
-    with open(PATH + 'metadata.pkl', 'rb') as f:
+    with open(PATH + METADATA, 'rb') as f:
         metadata = pickle.load(f)
     # read numpy arrays
-    idx_input = np.load(PATH + 'idx_input.npy')
+    idx_input = np.load(PATH + INDEX_INPUT)
     return metadata, idx_input
-
 
 if __name__ == '__main__':
     process_data()
-
-
-
-
 
 
 

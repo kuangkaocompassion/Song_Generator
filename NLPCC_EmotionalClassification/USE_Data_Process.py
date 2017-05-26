@@ -12,10 +12,11 @@ import numpy as np
 from collections import defaultdict
 import Model_Data_Process
 
-# metadata, idx_input = Model_Data_Process.load_data(PATH='')
-# w2idx = metadata['w2idx']
+metadata, idx_input = Model_Data_Process.load_data('FineTune_metadata.pkl', 'FineTune_idx_input.npy')
+w2idx = metadata['w2idx']
+
 UNK = 'unk'
-FILENAME = 'FineTune_Data_Jonathenlee.csv'
+FILENAME = 'TEST/jay_lyrics.csv'
 limit_length = 30
 
 def read_lines(filename):
@@ -24,7 +25,7 @@ def read_lines(filename):
 		csvfile = csv.reader(csvfile)
 		sentence_list = []
 		for line in csvfile:
-			sentence_list.append(line[1])
+			sentence_list.append(line[0])
 	return sentence_list
 
 def segmentation_to_token(sequence):

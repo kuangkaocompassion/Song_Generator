@@ -52,7 +52,7 @@ num_of_layer = 2
 learning_rate = 0.01
 training_epochs = 50
 n_input = 30
-batch_size = 100
+batch_size = 50
 n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
 flag_test = 0
@@ -238,9 +238,9 @@ if flag == 'TRAIN':
             if number_of_batch%2 == 0 and number_of_batch>0:
                 flag_test = 1
                 testX_all, testY_all, testX_emo_all = rand_batch_gen(testing_data, testing_data_emo)
-                testx = testX_all[0:200]
-                testx_emo = testX_emo_all[0:200]
-                testy = testY_all[1:201]
+                testx = testX_all[0:batch_size]
+                testx_emo = testX_emo_all[0:batch_size]
+                testy = testY_all[1:batch_size+1]
                 test_outputs_text = session.run([decoder_word_index], feed_dict = {x_inputs: testx, y_inputs:testy, x_inputs_emo_distribution:testx_emo })
                 test_outputs_text = [test_outputs_text[0][0:n_input].tolist(), test_outputs_text[0][n_input:n_input*2].tolist()]
                 

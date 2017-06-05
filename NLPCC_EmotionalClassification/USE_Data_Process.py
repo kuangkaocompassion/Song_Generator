@@ -12,11 +12,15 @@ import numpy as np
 from collections import defaultdict
 import Model_Data_Process
 
+# for use, not fine
 metadata, idx_input = Model_Data_Process.load_data('FineTune_metadata.pkl', 'FineTune_idx_input.npy')
 w2idx = metadata['w2idx']
 
 UNK = 'unk'
-FILENAME = 'TEST/jay_lyrics.csv'
+# FILENAME = 'FineTune_Data_Jonathenlee.csv'
+# FILENAME = 'TEST/jay_lyrics.csv'
+FILENAME = 'TEST/'+sys.argv[1]
+INDEX_INPUT = 'USE_idx_input.npy'
 limit_length = 30
 
 def read_lines(filename):
@@ -25,7 +29,7 @@ def read_lines(filename):
 		csvfile = csv.reader(csvfile)
 		sentence_list = []
 		for line in csvfile:
-			sentence_list.append(line[0])
+			sentence_list.append(line[0])       # only sentence
 	return sentence_list
 
 def segmentation_to_token(sequence):
@@ -81,14 +85,13 @@ input_tokenized = reduce_size(input_tokenized, limit_length)
 idx_input = zero_pad(input_tokenized, w2idx,upperbound=limit_length)
 # pdb.set_trace()
 
+np.save(INDEX_INPUT, idx_input)
+
 metadata = {
 	'USE_input': idx_input,
 	'USE_sentences': input_tokenized,
 }
 
+
 with open('USE_metadata.pkl', 'wb') as f:
 	pickle.dump(metadata, f)
-
-
-
-

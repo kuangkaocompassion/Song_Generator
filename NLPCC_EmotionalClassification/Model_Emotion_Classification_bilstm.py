@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.contrib import rnn
 import random
+import sys
 import collections
 import time
 import Model_Data_Process
@@ -14,9 +15,21 @@ import csv
 # >'USE'  : USE model to classify texts
 # >'TRAIN': TRAIN emotion classification model
 # >'FINETUNE': FINE TUNE the model
-flag='TRAIN'
-restore_model_path = 'CKPT/finetune_model-6'
-save_model_path = 'CKPT/train_model'
+flag = sys.argv[1]
+restore_model = sys.argv[2]
+training_epochs = 0
+
+if flag=='USE':
+    use_newFilename = sys.argv[3]
+else:
+    # EPOCH = sys.argv[3]
+    training_epochs = int(sys.argv[3])
+
+if flag=='TRAIN':
+    save_model_path = 'CKPT/train_model'
+elif flag=='FINETUNE':
+    save_model_path = 'CKPT/finetune_model'
+
 """
 ===USE===
 EMOTION_DIC: number <-> emotion category
@@ -28,10 +41,11 @@ if flag == 'USE':
     EMOTION_DIC = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4:'like', 5:'sadness', 6:'surprise'}
     with open('USE_metadata.pkl', 'rb') as f:
             use_metadata = pickle.load(f)
-    use_sentences = use_metadata['USE_sentences']
-    use_idx_sentences = use_metadata['USE_input']
+    use_sentences = use_metadata['USE_sentences']   # Chinese Sentence
+    use_idx_sentences = np.load('USE_idx_input.npy')   # to index
 
-    use_csvin = open('jay_lyrics_withEMO.csv', 'w')
+    # use_csvin = open('jay_lyrics_withEMO.csv', 'w')
+    use_csvin = open(use_newFilename, 'w') 
     use_csvin_writer = csv.writer(use_csvin)
 
 """
@@ -39,11 +53,16 @@ if flag == 'USE':
 metadata: three list (word2index, index2words, emoticons)
 idx_input: tokenized sentences
 """
-if flag =='TRAIN' or flag == 'FINETUNE':
-    metadata_filename = 'FineTune_metadata.pkl'
-    idx_input_filename = 'FineTune_idx_input.npy'
-    metadata, idx_input = Model_Data_Process.load_data(metadata_filename, idx_input_filename)
+if flag=='TRAIN':
+    metadata_filename = 'Model_metadata.pkl'
+    idx_input_filename = 'Model_idx_input.npy'
+elif flag=='FINETUNE':
+    metadata_filename = 'Finetune_metadata.pkl'
+    idx_input_filename = 'Finetune_idx_input.npy'
 
+
+if flag == 'TRAIN' or flag =='FINETUNE':
+    metadata, idx_input = Model_Data_Process.load_data(metadata_filename, idx_input_filename)
     dictionary = metadata['w2idx']
     reverse_dictionary = metadata['idx2w']
     exp_info = metadata['exp_info']
@@ -53,31 +72,33 @@ if flag =='TRAIN' or flag == 'FINETUNE':
     training_data = idx_input[0:int(num_toal_sentences*0.8)]
     testing_data = idx_input[int(num_toal_sentences*0.8):]
 
+
 # classification_number: number of emoticons
 classification_number = 7
 
 # Parameters
 num_of_layer = 2
 learning_rate = 0.001
-training_epochs = 6
-n_input = exp_info['limit_length']
+# training_epochs = 5
+n_input = 30
 batch_size = 100
 n_hidden = 256
 keep_prob = 0 # DROPOUT ratio
 
 # Experiment Record
 # Open Experiment Record
-exp_info['epchs'] = training_epochs
-exp_info['num_layers'] = num_of_layer
-exp_info['learning_rate'] = learning_rate
-exp_info['num_hidden_states'] = n_hidden
-exp_info['best_acc_train'] = 0
-exp_info['best_acc_test'] = 0
-exp_info['output_keep_prob'] = keep_prob
-note = "bidirectional: learning_rate = 0.001; AdamOptimizer"
+if flag == 'TRAIN' or flag == 'FINETUNE':
+    exp_info['epchs'] = training_epochs
+    exp_info['num_layers'] = num_of_layer
+    exp_info['learning_rate'] = learning_rate
+    exp_info['num_hidden_states'] = n_hidden
+    exp_info['best_acc_train'] = 0
+    exp_info['best_acc_test'] = 0
+    exp_info['output_keep_prob'] = keep_prob
+    note = "bidirectional: learning_rate = 0.001; AdamOptimizer"
 
-csvin = open('MODEL_Record.csv', 'a')
-csvin_writer = csv.writer(csvin)
+    csvin = open('MODEL_Record.csv', 'a')
+    csvin_writer = csv.writer(csvin)
 
 """
 ===MODEL===
@@ -143,16 +164,16 @@ init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
 # Launch the graph
-# pdb.set_trace()
-if flag == 'TRAIN' or flag =='FINETUNE':
+if flag == 'TRAIN' or flag == 'FINETUNE':
     if flag == 'TRAIN':
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
         session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         session.run(init)
     if flag == 'FINETUNE':
         session = tf.Session()
-        saver.restore(session, restore_model_path)
-        print("MODEL RESTORE\n")
+        # saver.restore(session, 'CKPT/my-model-100')         # change
+        saver.restore(session, 'CKPT/'+restore_model)
+        print("MODEL RESTORE\n")   
     number_of_epoch = 0
     print("START TRAINING")
     while number_of_epoch < training_epochs:
@@ -215,12 +236,12 @@ if flag == 'TRAIN' or flag =='FINETUNE':
                            note
                            ])
     csvin.close()
-    session.close()
 if flag == 'USE':
     saver = tf.train.Saver()
     with tf.Session() as session:
-        saver.restore(session, restore_model_path)
-        print("MODEL RESTORE\n")
+        # saver.restore(session, 'CKPT/my-model-100')
+        saver.restore(session, 'CKPT/'+restore_model)
+        print("MODEL RESTORE\n") 
         for num_line in range(len(use_sentences)):
             symbols_in_keys_use = np.reshape(use_idx_sentences[num_line], [-1, n_input, 1])
             softmax_result_use = session.run( [softmax_result], feed_dict={x: symbols_in_keys_use})
@@ -228,8 +249,7 @@ if flag == 'USE':
 
             use_csvin_writer.writerow([
                 EMOTION_DIC[softmax_result_use[0][0].argmax()],
-                ''.join(use_sentences[num_line]),
+                ''.join(use_sentences[num_line])
                 ])
 
     use_csvin.close()
-

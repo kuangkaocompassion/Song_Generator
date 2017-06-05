@@ -9,6 +9,7 @@ import nltk
 import itertools
 import pickle
 import numpy as np
+import time
 from collections import defaultdict
 
 METADATA = 'Model_metadata.pkl'
@@ -16,7 +17,7 @@ INDEX_INPUT = 'Model_idx_input.npy'
 # ===== Files =====
 # FILENAME: Emoticons, Sentence
 # UNK: Unknown word 
-FILENAME = 'Training_data_for_Emotion_Classification.csv'
+FILENAME = 'DATASET/train/Training_data_for_Emotion_Classification.csv'
 
 # anger, disgust, fear, happiness, like, sadness, surprise
 EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':2, 'happiness':3, 'like':4, 'sadness':5, 'surprise':6}
@@ -222,7 +223,7 @@ def process_data():
 
 
 	# save the necessary dictionaries
-	pdb.set_trace()
+# 	pdb.set_trace()
 	metadata = {
 	        	'w2idx' : w2idx,
 	        	'idx2w' : idx2w,
@@ -254,14 +255,3 @@ def load_data(METADATA, INDEX_INPUT,PATH=''):
 
 if __name__ == '__main__':
     process_data()
-
-
-
-
-
-
-
-
-
-
-

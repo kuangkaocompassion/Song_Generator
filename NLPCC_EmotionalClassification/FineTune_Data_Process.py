@@ -15,24 +15,25 @@ from collections import defaultdict
 # ===== Files =====
 # FILENAME: Emoticons, Sentence
 # UNK: Unknown word 
-FILENAME = 'FineTune_Data_Jonathenlee.csv'
+#FILENAME = 'FineTune_Data_JonathenLee.csv'
+#FILENAME = 'FineTune_Data_Jay-1.csv'
+FILENAME = 'DATASET/finetune/'+sys.argv[1]
 METADATA = 'FineTune_metadata.pkl'
 INDEX_INPUT = 'FineTune_idx_input.npy'
 
-original_metadata, idx_input = Model_Data_Process.load_data('Model_metadata.pkl', 'Model_idx_input.npy')
+print("RESTORE ORIGINAL METADATA & IDX-INPUT\n")
+original_metadata, original_idx_input = Model_Data_Process.load_data('model_metadata.pkl', 'model_idx_input.npy')
+w2idx = original_metadata['w2idx']
 original_idx2w = original_metadata['idx2w']
-exp_info = original_metadata['exp_info']
 
-# get original 
-original_metadata = 'Model_metadata.pkl'
 
 # anger, disgust, fear, happiness, like, sadness, surprise
 EMOTION_DIC = {'anger':0, 'disgust':1, 'fear':2, 'happiness':3, 'like':4, 'sadness':5, 'surprise':6}
 FILTERED_EMO = ['fear', 'surprise']
-VOCAB_SIZE = 5000
+exp_info = dict()
 limit_length = 30
 UNK = 'unk'
-
+exp_info['limit_length'] = limit_length
 # ===== Conditions =====
 # forbidden_symbol: symbols not allowed in sentence
 
@@ -63,17 +64,16 @@ def pad_seq(seq, lookup, maxlen):
             indices.append(lookup[UNK])
     return indices + [0]*(maxlen - len(seq))
 
-def index_token(tokens , vocab_size):
+def index_token(tokens):
     global original_idx2w
     # get frequency distribution
     freq_dist = nltk.FreqDist(tokens)
     # pdb.set_trace()
-    # get vocabulary of 'vocab_size' most used words
     vocab = freq_dist.most_common(len(freq_dist))
     # index2word
-    index2word = [ token[0] for token in vocab ]
-    original_idx2w += index2word
-    original_idx2w = list(set(original_idx2w))
+    index2word = [token[0] for token in vocab ]
+    original_idx2w += index2word 
+    original_idx2w = list(set(original_idx2w))      # set: no-repeat
     # word2index
     word2index = dict([(w,i) for i,w in enumerate(original_idx2w)] )
     return original_idx2w, word2index, vocab, len(freq_dist)
@@ -134,9 +134,12 @@ def read_lines(filename):
 		csvfile = csv.reader(csvfile)
 		sentence_list = []
 		emoticon_list = []
+		# count = 1
 		for line in csvfile:
 			sentence_list.append(line[1])
 			emoticon_list.append(EMOTION_DIC[line[0]])
+			# print(count)
+			# count += 1
 	return sentence_list, emoticon_list
 
 def reduce_size(TokenizedLines, emoticons, upperbound):
@@ -178,8 +181,9 @@ def filter_emotions(sequence, emotion, filter):
 
 def process_data():
 	
-	print('\n>> Read lines from file')
+	print('\n>> Read lines from  finetune file')
 	lines, emoticons = read_lines(filename=FILENAME)
+	print("original number of lines:", len(lines))
 
 	print('\n>> INFO about DataSet')
 	freq_emotion = nltk.FreqDist(emoticons)
@@ -199,11 +203,11 @@ def process_data():
 	input_tokenized, emoticons = reduce_size(input_tokenized, emoticons, limit_length)
 	# pdb.set_trace()
 
-	print('\n >> Index2words AND Word2Index')
-	idx2w, w2idx, tokens_freq, origi_num_tokens = index_token( input_tokens, vocab_size=VOCAB_SIZE)
+	print('\n>> Index2words AND Word2Index')
+	idx2w, w2idx, tokens_freq, origi_num_tokens = index_token( input_tokens)
 	print("=====info: index2word, word2index=====")
-	print("number of lines:", len(input_tokenized), "original:15690")
-	print("number of reduced tokens:", len(tokens_freq))
+	print("number of lines:", len(input_tokenized))
+	print("number of tokens:", len(tokens_freq))
 	print("sample tokenized lines:", input_tokenized[120: 123])
 	print("ration of tokens left:", float(len(tokens_freq))*100/float(origi_num_tokens), "%")
 	# print("tokens:", tokens_freq)
@@ -230,7 +234,7 @@ def process_data():
 
 
 	# save the necessary dictionaries
-	metadata = {
+	new_metadata = {
 	        	'w2idx' : w2idx,
 	        	'idx2w' : idx2w,
 	        	'emoticons': emoticons,
@@ -240,7 +244,7 @@ def process_data():
 
 	# write to disk : data control dictionaries
 	with open(METADATA, 'wb') as f:
-		pickle.dump(metadata, f)
+		pickle.dump(new_metadata, f)
 	
 # def load_data(PATH='', METADATA, INDEX_INPUT):
 #     # read data control dictionaries
@@ -261,14 +265,3 @@ def load_data(METADATA, INDEX_INPUT,PATH=''):
 
 if __name__ == '__main__':
     process_data()
-
-
-
-
-
-
-
-
-
-
-

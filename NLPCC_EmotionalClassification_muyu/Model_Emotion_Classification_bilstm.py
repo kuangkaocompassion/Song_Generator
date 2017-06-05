@@ -246,10 +246,16 @@ if flag == 'USE':
             symbols_in_keys_use = np.reshape(use_idx_sentences[num_line], [-1, n_input, 1])
             softmax_result_use = session.run( [softmax_result], feed_dict={x: symbols_in_keys_use})
             # print(type(softmax_result_use[0][0]))
-
+            if num_line == 0:
+                emotion_distribution = softmax_result_use[0]
+            else:
+                emotion_distribution = np.concatenate((emotion_distribution,softmax_result_use[0]), axis=0)
+            
             use_csvin_writer.writerow([
                 EMOTION_DIC[softmax_result_use[0][0].argmax()],
                 ''.join(use_sentences[num_line])
                 ])
-
+        print("Finish Classifying !!\n")
+        print("SAVE EMOTION ARRAY")
+        np.save(use_newFilename.replace('.csv','.npy'), emotion_distribution)
     use_csvin.close()

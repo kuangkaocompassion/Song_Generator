@@ -23,8 +23,9 @@ INDEX_INPUT = 'FineTune_idx_input.npy'
 
 print("RESTORE ORIGINAL METADATA & IDX-INPUT\n")
 original_metadata, original_idx_input = Model_Data_Process.load_data('model_metadata.pkl', 'model_idx_input.npy')
-w2idx = original_metadata['w2idx']
+original_w2idx = original_metadata['w2idx']
 original_idx2w = original_metadata['idx2w']
+# pdb.set_trace()
 
 
 # anger, disgust, fear, happiness, like, sadness, surprise
@@ -72,10 +73,12 @@ def index_token(tokens):
     vocab = freq_dist.most_common(len(freq_dist))
     # index2word
     index2word = [token[0] for token in vocab ]
+    # pdb.set_trace()
     original_idx2w += index2word 
-    original_idx2w = list(set(original_idx2w))      # set: no-repeat
+    original_idx2w = ['_'] + [UNK] + list(set(original_idx2w[2:]))      # set: no-repeat
     # word2index
     word2index = dict([(w,i) for i,w in enumerate(original_idx2w)] )
+    
     return original_idx2w, word2index, vocab, len(freq_dist)
 
 def zero_pad(qtokenized, w2idx, upperbound):

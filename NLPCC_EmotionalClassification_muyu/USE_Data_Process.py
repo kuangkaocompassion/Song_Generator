@@ -15,7 +15,8 @@ import Model_Data_Process
 # for use, not fine
 metadata, idx_input = Model_Data_Process.load_data('FineTune_metadata.pkl', 'FineTune_idx_input.npy')
 w2idx = metadata['w2idx']
-
+idx2w = metadata['idx2w']
+# pdb.set_trace()
 UNK = 'unk'
 # FILENAME = 'FineTune_Data_Jonathenlee.csv'
 # FILENAME = 'TEST/jay_lyrics.csv'
@@ -90,6 +91,8 @@ np.save(INDEX_INPUT, idx_input)
 metadata = {
 	'USE_input': idx_input,
 	'USE_sentences': input_tokenized,
+	'w2idx': w2idx,
+	'idx2w': idx2w,
 }
 
 

@@ -9,13 +9,13 @@ import numpy as np
 import tensorflow as tf
 # import matplotlib.pyplot as plt
 from hanziconv import HanziConv 			# TW -> CN unicode
-from dataset.process import Data_Process
-from models.EmoClassify import Emo_Classifier
+from process import Data_Process
+from EmoClassify import Emo_Classifier
 
 # example:
-# python3 main.py -p TRAIN -n Weibo_data.csv -m char
-# python3 main.py -p FINETUNE -n FineTune_Data_Jay-1.csv -of Weibo_data -m char
-# python3 main.py -p USE -n jay_lyrics_notag.csv -m char
+# python3 main.py -p TRAIN -n Weibo_data.csv -m char/token
+# python3 main.py -p FINETUNE -n FineTune_Data_Jay-1.csv -of Weibo_data -m char/token
+# python3 main.py -p USE -n jay_lyrics_notag.csv -m char/token -nf jay_lyrics_notag_withEMO.csv
 
 def default_check(args):
 	if (args.method==''):
@@ -63,11 +63,13 @@ if (args.commandinput==1):
 print("\n>> Data Process")
 data_object = Data_Process(limit_length=30, args=args)
 if (args.purpose == "USE"):
-	data_object.USE_process_data()
+	data_object.use_process_data()
 else:
-	data_object.process_data()
+	data_object.train_process_data()
+
 
 print("\n>> Emotion Classification")
 emo_object = Emo_Classifier(args=args)
 emo_object.USE_emotion_classifier()
 print("\nend")
+

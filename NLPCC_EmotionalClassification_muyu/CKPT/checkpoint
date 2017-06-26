@@ -1,2 +1,0 @@
-model_checkpoint_path: "finetune_model-80"
-all_model_checkpoint_paths: "finetune_model-80"

@@ -5,7 +5,8 @@ import random
 import sys
 import collections
 import time
-import dataset.process
+# import dataset.process
+import process
 import pdb
 import pickle
 from random import sample
@@ -16,9 +17,10 @@ import csv
 # >'TRAIN': TRAIN emotion classification model
 # >'FINETUNE': FINE TUNE the model
 
-
+# 062617: problem in training
 class Emo_Classifier(object):
 	def __init__(self, args):
+		# pdb.set_trace()
 		self.purpose = args.purpose
 		self.filename = args.name
 		self.method = args.method
@@ -33,6 +35,7 @@ class Emo_Classifier(object):
 		self.classification_number = 7
 
 		self.num_of_layer = 2
+		self.training_epochs= 100
 		self.learning_rate = 0.001
 		self.n_input = 30
 		self.batch_size = 100
@@ -67,20 +70,6 @@ class Emo_Classifier(object):
 		pred = self.Bi_LSTM(x, weights, biases, layer=self.num_of_layer)
 		return x, y, weights, biases, pred
 
-	# def rand_batch_gen(x, y):
-	# 	"""
-	# 	Goal: random sample out order of every sentence
-	# 	x: sentences
-	# 	y: emoticons
-	# 	"""
-	# 	sample_idx = sample(list(np.arange(len(x))), len(x))
-	# 	new_x = []
-	# 	new_y = []
-	# 	for index in sample_idx:
-	# 		new_x.append(x[index])
-	# 		new_y.append(y[index])
-	# 	return np.array(new_x), np.array(new_y)
-
 	def Bi_LSTM(self, x, weights, biases, layer):
 		x = tf.unstack(x, self.n_input, 1)
 		# Forward direction cell
@@ -107,27 +96,19 @@ class Emo_Classifier(object):
 	# use information initialize
 	def use_init(self, args):
 		self.use_newFilename = args.newfile
-		self.restore_matadata_name = 'TEST/USE_'+self.filename.replace('.csv', '_metadata.pkl')
-		self.idx_input_filename = 'TEST/'+self.filename.replace('.csv', '_use_idx_input.npy')
-		self.restore_model = 'original_classify_model-100'										## can change
+		self.restore_matadata_name = 'TEST/'+self.filename.replace('.csv', '_metadata.pkl')
+		self.idx_input_filename = 'TEST/'+self.filename.replace('.csv', '_idx_input.npy')
+		# self.restore_model = 'original_classify_model-100'
+		self.restore_model = 'finetune_model-80'										
 		self.csvin = open(self.use_newFilename, 'w')
 		self.csvin_writer = csv.writer(self.csvin)		
 		self.csvin_writer.writerow(['emotion','lyrics','anger','disgust','fear','happiness','like','sadness','surprise'])
 
 	# Training information initialize
 	def training_init(self, args):
-		# self.training_epochs = args.epochs
-		# self.metadata, idx_input = Model_Data_Process.load_data(metadata_filename, idx_input_filename)
-		# self.dictionary = metadata['w2idx']
-		# self.reverse_dictionary = metadata['idx2w']
-		# self.exp_info = metadata['exp_info']
-		# self.num_toal_sentences = len(idx_input)
-		# self.emoticons_train = metadata['emoticons'][0:int(num_toal_sentences*0.8)]
-		# self.emoticons_test = metadata['emoticons'][int(num_toal_sentences*0.8):]
-		# self.training_data = idx_input[0:int(num_toal_sentences*0.8)]
-		# self.testing_data = idx_input[int(num_toal_sentences*0.8):]
 		if self.purpose == 'TRAIN':
 			self.save_model_path = 'CKPT/train_model'
+			# restore file
 			self.metadata_filename = 'Model_metadata.pkl'
 			self.idx_input_filename = 'Model_idx_input.npy'        
 		if self.purpose == 'FINETUNE':
@@ -168,6 +149,7 @@ class Emo_Classifier(object):
 
 		with tf.Session() as session:
 			# model restore
+			# pdb.set_trace()
 			self.saver.restore(session, 'CKPT/'+self.restore_model)
 			print("MODEL RESTORE\n") 
 			

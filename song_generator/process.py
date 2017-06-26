@@ -24,11 +24,11 @@ class Data_Process():
             self.metadata = self.filename.replace('.csv', '_train_metadata.pkl')
         if self.purpose == 'USE':
             self.metadata = self.filename.replace('.csv', '_metadata.pkl')
-            self.restore_matadata_name = 'dataset/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'   # use Jay model
+            self.restore_matadata_name = 'DATASET/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'   # use Jay model
         elif self.purpose == 'FINETUNE':
             self.origi_filename = args.original_file
             self.metadata = self.filename.replace('.csv', '_finetune_metadata.pkl')
-            self.restore_matadata_name = 'dataset/train/'+ self.origi_filename + '_train_metadata.pkl'
+            self.restore_matadata_name = 'DATASET/train/'+ self.origi_filename + '_train_metadata.pkl'
 
         self.vocab_size = vocab_size
         # self.seq_length = seq_length
@@ -127,9 +127,9 @@ class Data_Process():
 
     def read_lines(self):
         if self.purpose == 'TRAIN':
-            filename = 'dataset/train/' + self.filename
+            filename = 'DATASET/train/' + self.filename
         elif self.purpose == 'FINETUNE':
-            filename = 'dataset/finetune/' + self.filename
+            filename = 'DATASET/finetune/' + self.filename
         sentence_list = []
         emoticon_list = []
         with open(filename, 'r') as csvfile:
@@ -188,7 +188,7 @@ class Data_Process():
             metadata = pickle.load(f)
         return metadata 
     
-    def USE_process_data(self):
+    def use_process_data(self):
         print("PURPOSE:", self.purpose)
         print("-"*20)
         use_metadata = self.load_metadata()
@@ -200,17 +200,20 @@ class Data_Process():
         self.input_tokenized = self.use_reduce_size(self.input_tokenized, self.limit_length)
         self.idx_input = self.zero_pad(self.input_tokenized, use_w2idx, upperbound=self.limit_length)
 
-        print("SAVE:", self.filename.replace('.csv','_use_idx_input.npy'))
+        print("SAVE:", self.filename.replace('.csv','_idx_input.npy'))
         # save the necessary dictionaries
-        new_metadata = {'lines' : self.lines}
+        new_metadata = {'lines' : self.lines, 
+                        'w2idx' : use_metadata['w2idx'],
+                        'idx2w' : use_metadata['idx2w'],
+                       }
 
         # write to disk : data control dictionaries
-        with open('TEST/'+ self.purpose +'_'+self.metadata, 'wb') as f:
+        with open('TEST/'+ self.metadata, 'wb') as f:
                 pickle.dump(new_metadata, f)
         
-        np.save('TEST/'+ self.filename.replace('.csv','_use_idx_input.npy'), self.idx_input)
+        np.save('TEST/'+ self.filename.replace('.csv','_idx_input.npy'), self.idx_input)
 
-    def process_data(self):
+    def train_process_data(self):
         print("PURPOSE:", self.purpose)
         print("-"*20)
         print('\n>> Read lines from file')
@@ -223,6 +226,7 @@ class Data_Process():
         
         print('\n>> Filter lines from lines')
         self.lines, self.emoticons = self.filter_lines(self.lines, self.emoticons)
+        # pdb.set_trace()
         # self.lines, self.emoticons = filter_emotions(lines, emoticons, filter=FILTERED_EMO)
         print("=====info: filtered lines=====")
         print("sample lines:", self.lines[0:3])
@@ -264,9 +268,9 @@ class Data_Process():
 
         print('\n >> Save numpy arrays to disk')
         if self.purpose == 'TRAIN':
-            np.save('dataset/train/'+ self.filename.replace('.csv','_train_idx_input.npy'), self.idx_input)
+            np.save('DATASET/train/'+ self.filename.replace('.csv','_train_idx_input.npy'), self.idx_input)
         elif self.purpose == 'FINETUNE':
-            np.save('dataset/finetune/'+ self.filename.replace('.csv','_finetune_idx_input.npy'), self.idx_input)
+            np.save('DATASET/finetune/'+ self.filename.replace('.csv','_finetune_idx_input.npy'), self.idx_input)
         
         # save the necessary dictionaries
         new_metadata = {
@@ -276,5 +280,5 @@ class Data_Process():
                         }
 
         # write to disk : data control dictionaries
-        with open('dataset/'+ self.purpose.lower() + '/'+ self.metadata, 'wb') as f:
+        with open('DATASET/'+ self.purpose.lower() + '/'+ self.metadata, 'wb') as f:
                 pickle.dump(new_metadata, f)

@@ -283,7 +283,7 @@ def sample(model, data):
 if __name__ == '__main__':
     path = 'TEST/jay_lyrics_notag_withEMO.csv'
     TrainData = DataGenerator(path)
-    Model = Model('TEST')
+    Model = Model('TRAIN')
     train(Model, TrainData)
     # sample(Model, TrainData)
 

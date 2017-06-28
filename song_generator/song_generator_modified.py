@@ -45,10 +45,20 @@ class DataGenerator():
         # print('Vocabulary Size: ', self.vocab_size)
         self.char2id_dict = {w: i for i, w in enumerate(self.words)}
         self.id2char_dict = {i: w for i, w in enumerate(self.words)}
-
+        # save char2id_dict, id2char_dict
+        self.SaveObj(self.char2id_dict, 'char2id_dict')
+        self.SaveObj(self.id2char_dict, 'id2char_dict')
         # pointer position to generate current batch
         self._pointer = 0
     
+    def SaveObj(self, obj, name):
+        with open('CKPT/song_generator/dict/' + name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    
+    def LoadObj(name):
+        with open('CKPT/song_generator/dict/' + name + '.pkl', 'rb') as f: 
+            return pickle.load(f)      
+
     def GetSentence(self, csvpath):
         with open(csvpath, 'r', encoding='utf-8') as f:
             csvfile = csv.reader(f)
@@ -255,17 +265,20 @@ def train(model, data):
             saver.save(session, save_model_path, global_step=number_of_epoch)
         number_of_epoch += 1
 
-def sample(model, data):
+def sample(model):
+    char2id = DataGenerator.LoadObj('char2id_dict')
+    id2char = DataGenerator.LoadObj('id2char_dict')
+    # pdb.set_trace()
     saver = tf.train.Saver()
     with tf.Session() as session:
         ckpt = tf.train.latest_checkpoint('CKPT/song_generator/')
         print(ckpt)
         saver.restore(session, ckpt)
         sentence = u'你要离开我知道很简单'
-        sentence_ = [data.char2id(c) for c in sentence]
-        sentence_ += [0 for i in range(data.seq_length - len(sentence))]
+        sentence_ = [char2id[c] for c in sentence]
+        sentence_ += [0 for i in range( model.NumInput - len(sentence))]
 
-        y_fake = [0 for i in range(data.seq_length)]
+        y_fake = [0 for i in range(model.NumInput)]
         sentence_emo = np.array([0.0733089,0.228538,2.36306e-09,0.258303,0.188573,0.251277,2.32927e-08])
         
         feed_dict = {
@@ -274,9 +287,10 @@ def sample(model, data):
                      model.x_emo_dist: [sentence_emo]
                     }
         output_idx = session.run([model.DecoWord_idx], feed_dict)
-        output_sentence = [data.id2char(c) for c in output_idx[0]]
+        output_sentence = [id2char[c] for c in output_idx[0]]
         output_sentence_w = ''.join(output_sentence)
         print(sentence)
+        print(sentence_)
         print(output_idx)
         print(output_sentence_w)
     return 0
@@ -285,7 +299,7 @@ if __name__ == '__main__':
     TrainData = DataGenerator(path)
     Model = Model('TRAIN')
     train(Model, TrainData)
-    # sample(Model, TrainData)
+    # sample(Model)
 
 
 

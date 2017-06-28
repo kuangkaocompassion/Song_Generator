@@ -220,10 +220,10 @@ class Model(object):
 
 def train(model, data):
     save_model_path = 'CKPT/song_generator/emo_lyrics_model'
-    epochs = 40
+    epochs = 100
     number_of_epoch = 0
     init = tf.global_variables_initializer()
-    saver = tf.train.Saver(max_to_keep=20)
+    saver = tf.train.Saver(max_to_keep=6)
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
     session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     session.run(init)
@@ -266,7 +266,7 @@ def sample(model, data):
         sentence_ += [0 for i in range(data.seq_length - len(sentence))]
 
         y_fake = [0 for i in range(data.seq_length)]
-        sentence_emo = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+        sentence_emo = np.array([0.0733089,0.228538,2.36306e-09,0.258303,0.188573,0.251277,2.32927e-08])
         
         feed_dict = {
                      model.x_input: [sentence_],\

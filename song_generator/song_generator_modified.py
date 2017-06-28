@@ -251,6 +251,8 @@ def train(model, data):
             print("cost:", cost)
         print('EPOCH:{}, training_loss:{:4f}'.format(number_of_epoch, 
                                                      cost_total/num_of_batch_per_epoch ))
+        if number_of_epoch%5 == 0:
+            saver.save(session, save_model_path, global_step=number_of_epoch)
         number_of_epoch += 1
 
 def sample(model, data):

@@ -200,7 +200,6 @@ class Data_Process():
         self.input_tokenized = self.use_reduce_size(self.input_tokenized, self.limit_length)
         self.idx_input = self.zero_pad(self.input_tokenized, use_w2idx, upperbound=self.limit_length)
 
-        print("SAVE:", self.filename.replace('.csv','_idx_input.npy'))
         # save the necessary dictionaries
         new_metadata = {'lines' : self.lines, 
                         'w2idx' : use_metadata['w2idx'],
@@ -210,7 +209,8 @@ class Data_Process():
         # write to disk : data control dictionaries
         with open('TEST/'+ self.metadata, 'wb') as f:
                 pickle.dump(new_metadata, f)
-        
+        print("SAVE:", 'TEST/'+ self.filename.replace('.csv','_idx_input.npy'))
+        print("SAVE:", 'TEST/'+ self.metadata)
         np.save('TEST/'+ self.filename.replace('.csv','_idx_input.npy'), self.idx_input)
 
     def train_process_data(self):

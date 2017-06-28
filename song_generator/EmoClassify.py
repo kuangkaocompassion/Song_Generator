@@ -95,9 +95,9 @@ class Emo_Classifier(object):
 	
 	# use information initialize
 	def use_init(self, args):
-		self.use_newFilename = args.newfile
-		self.restore_matadata_name = 'TEST/'+self.filename.replace('.csv', '_metadata.pkl')
-		self.idx_input_filename = 'TEST/'+self.filename.replace('.csv', '_idx_input.npy')
+		self.use_newFilename = 'TEST/'+ args.newfile
+		self.restore_matadata_name = 'TEST/' + self.filename.replace('.csv', '_metadata.pkl')
+		self.idx_input_filename = 'TEST/' + self.filename.replace('.csv','_idx_input.npy')
 		# self.restore_model = 'original_classify_model-100'
 		self.restore_model = 'finetune_model-80'										
 		self.csvin = open(self.use_newFilename, 'w')

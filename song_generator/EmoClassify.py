@@ -231,7 +231,7 @@ def EC_train(model, data):
     if model.purpose == 'TRAIN':
         session.run(init)
     else:
-        ckpt = 'CKPT/song_generator/emo_lyrics_model-90'
+        ckpt = 'CKPT/emotion_classifier/emo_classify_original_model-75'
         print("restore:", ckpt)
         saver.restore(session, ckpt)        
 

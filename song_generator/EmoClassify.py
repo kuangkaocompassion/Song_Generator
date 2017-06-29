@@ -41,7 +41,7 @@ class EC_DataGenerator(object):
             self.metadata_path = 'DATASET/emotion_classifier/train/Weibo_data_train_metadata.pkl'
             self.idx_input_path = 'DATASET/emotion_classifier/train/Weibo_data_train_idx_input.npy'        
         if self.purpose == 'FINETUNE':
-            self.origi_filename = args.original_file
+            # self.origi_filename = args.original_file
             self.save_model_path = 'CKPT/emotion_classifier/emo_classify_finetune_model'
             self.metadata_path = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'
             self.idx_input_path = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_idx_input.npy'

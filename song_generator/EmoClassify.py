@@ -266,7 +266,7 @@ def EC_train(model, data):
                     }
         acc = session.run([model.accuracy], feed_dict )
         pdb.set_trace()
-        print('EPOCH:{}, testing_accuracy:{:4f}'.format(number_of_epoch, acc))
+        print('EPOCH:{}, testing_accuracy:{:4f}'.format(number_of_epoch, acc[0]))
         if number_of_epoch%15 == 0:
             saver.save(session, save_model_path, global_step=number_of_epoch)
         number_of_epoch += 1   

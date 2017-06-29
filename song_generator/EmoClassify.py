@@ -73,7 +73,7 @@ class EC_DataGenerator(object):
         batch_x = []
         batch_y = []
         for num in range(self.batch_size):
-            pdb.set_trace()
+            # pdb.set_trace()
             rand_idx = np.random.randint(0, high=self.data_size-self.data_separate_point)
             batch_x.append(self.train_data[rand_idx])
             batch_y.append(self.train_data_emo[rand_idx])

@@ -24,11 +24,11 @@ class Data_Process():
             self.metadata = self.filename.replace('.csv', '_train_metadata.pkl')
         if self.purpose == 'USE':
             self.metadata = self.filename.replace('.csv', '_metadata.pkl')
-            self.restore_matadata_name = 'DATASET/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'   # use Jay model
+            self.restore_matadata_name = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'   # use Jay model
         elif self.purpose == 'FINETUNE':
             self.origi_filename = args.original_file
             self.metadata = self.filename.replace('.csv', '_finetune_metadata.pkl')
-            self.restore_matadata_name = 'DATASET/train/'+ self.origi_filename + '_train_metadata.pkl'
+            self.restore_matadata_name = 'DATASET/emotion_classifier/train/'+ self.origi_filename + '_train_metadata.pkl'
 
         self.vocab_size = vocab_size
         # self.seq_length = seq_length
@@ -127,9 +127,9 @@ class Data_Process():
 
     def read_lines(self):
         if self.purpose == 'TRAIN':
-            filename = 'DATASET/train/' + self.filename
+            filename = 'DATASET/emotion_classifier/train/' + self.filename
         elif self.purpose == 'FINETUNE':
-            filename = 'DATASET/finetune/' + self.filename
+            filename = 'DATASET/emotion_classifier/finetune/' + self.filename
         sentence_list = []
         emoticon_list = []
         with open(filename, 'r') as csvfile:
@@ -268,9 +268,9 @@ class Data_Process():
 
         print('\n >> Save numpy arrays to disk')
         if self.purpose == 'TRAIN':
-            np.save('DATASET/train/'+ self.filename.replace('.csv','_train_idx_input.npy'), self.idx_input)
+            np.save('DATASET/emotion_classifier/train/'+ self.filename.replace('.csv','_train_idx_input.npy'), self.idx_input)
         elif self.purpose == 'FINETUNE':
-            np.save('DATASET/finetune/'+ self.filename.replace('.csv','_finetune_idx_input.npy'), self.idx_input)
+            np.save('DATASET/emotion_classifier/finetune/'+ self.filename.replace('.csv','_finetune_idx_input.npy'), self.idx_input)
         
         # save the necessary dictionaries
         new_metadata = {
@@ -280,5 +280,5 @@ class Data_Process():
                         }
 
         # write to disk : data control dictionaries
-        with open('DATASET/'+ self.purpose.lower() + '/'+ self.metadata, 'wb') as f:
+        with open('DATASET/emotion_classifier/'+ self.purpose.lower() + '/'+ self.metadata, 'wb') as f:
                 pickle.dump(new_metadata, f)

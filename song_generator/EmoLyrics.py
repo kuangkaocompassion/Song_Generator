@@ -122,7 +122,7 @@ class EmoLyricsModel(object):
 
         self.x_input, self.y_input, self.x_emo_dist, \
         self.target, self.weight, self.bias, self.embedding = self.Model_init()
-
+        # pdb.set_trace()
         self.Model_Main()
 
     """
@@ -221,9 +221,6 @@ class EmoLyricsModel(object):
         self.cost = tf.reduce_mean(loss)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.cost)
 
-        # Initializing the variables
-        init = tf.global_variables_initializer()
-        saver = tf.train.Saver()
 
 def ELM_train(model, data):
     save_model_path = 'CKPT/song_generator/emo_lyrics_model'
@@ -300,9 +297,9 @@ if __name__ == '__main__':
     args = set_argparse()
     with tf.variable_scope('song_generator'):
         Model = EmoLyricsModel(args.purpose)
-    
+    # pdb.set_trace()
     if args.purpose == 'TRAIN':
-        path = 'DATASET/song_generator/' + args.filename 
+        path = 'TEST/' + args.filename 
         TrainData = ELM_DataGenerator(path)
         ELM_train(Model, TrainData)
     

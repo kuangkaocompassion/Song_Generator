@@ -115,7 +115,8 @@ class EmotionClassifier(object):
         self.softmax_result = tf.nn.softmax(logits=pred)
         self.cost_in_one_batch = tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=self.y)
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=self.y))
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.cost)
+        if self.purpose == 'TRAIN':
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.cost)
         # Model evaluation
         self.correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(self.y,1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))

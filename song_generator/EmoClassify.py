@@ -19,7 +19,7 @@ import csv
 # >'FINETUNE': FINE TUNE the model
 
 # example:
-# python3 EmoClassify.py -p TRAIN -
+# python3 EmoClassify.py -p TRAIN 
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p","--purpose", help="purpose: TRAIN, FINETUNE", type=str)
@@ -42,7 +42,7 @@ class EC_DataGenerator(object):
             self.idx_input_path = 'DATASET/emotion_classifier/train/Weibo_data_train_idx_input.npy'        
         if self.purpose == 'FINETUNE':
             self.origi_filename = args.original_file
-            self.save_model_path = 'CKPT/emo_classify_finetune_model'
+            self.save_model_path = 'CKPT/emotion_classifier/emo_classify_finetune_model'
             self.metadata_path = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'
             self.idx_input_path = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_idx_input.npy'
        
@@ -68,15 +68,22 @@ class EC_DataGenerator(object):
         return new_array
 
     def next_batch(self):
-        # index list
         batch_x = []
         batch_y = []
         for num in range(self.batch_size):
-            rand_idx = np.random.randint(0, high=self.data_size)
+            rand_idx = np.random.randint(0, high=self.data_size-3940)
             batch_x.append(self.train_data[rand_idx])
             batch_y.append(self.train_data_emo[rand_idx])
         return np.array(batch_x), np.array(batch_y)
 
+    def test_batch(self):
+        batch_x = []
+        batch_y = []
+        for num in range(self.batch_size):
+            rand_idx = np.random.randint(self.data_size-3940, high=self.data_size)
+            batch_x.append(self.train_data[rand_idx])
+            batch_y.append(self.train_data_emo[rand_idx])
+        return np.array(batch_x), np.array(batch_y)        
 
 class EmotionClassifier(object):
     def __init__(self, args):
@@ -220,7 +227,14 @@ def EC_train(model, data):
     saver = tf.train.Saver(max_to_keep=6)
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
     session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    session.run(init)
+    
+    if model.purpose == 'TRAIN':
+        session.run(init)
+    else:
+        ckpt = 'CKPT/song_generator/emo_lyrics_model-90'
+        print("restore:", ckpt)
+        saver.restore(session, ckpt)        
+
     
     print("START TRAINING!!")
     while number_of_epoch < epochs:
@@ -241,10 +255,18 @@ def EC_train(model, data):
                         }
             
             _, cost, acc = session.run([model.optimizer, model.cost, model.accuracy], feed_dict )
-            cost_total += cost
             print("cost:", cost, ";accuracy:", acc)
-        print('EPOCH:{}, training_loss:{:4f}'.format(number_of_epoch, 
-                                                     cost_total/num_of_batch_per_epoch ))
+        # test:
+        x_test, y_test = data.test_batch()
+        x_test = np.reshape(x_test, [-1, model.n_input, 1])
+
+        feed_dict = {  
+                    model.x: x_test, 
+                    model.y: y_test, 
+                    }
+        acc = session.run([model.accuracy], feed_dict )
+
+        print('EPOCH:{}, testing_accuracy:{:4f}'.format(number_of_epoch, acc))
         if number_of_epoch%15 == 0:
             saver.save(session, save_model_path, global_step=number_of_epoch)
         number_of_epoch += 1   

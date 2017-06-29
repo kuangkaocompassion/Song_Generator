@@ -35,12 +35,14 @@ class EC_DataGenerator(object):
         self.purpose = args.purpose
 
         if self.purpose == 'TRAIN':
+            self.data_separate_point = 3940
             # save model's checkpoint
             self.save_model_path = 'CKPT/emotion_classifier/emo_classify_original_model'
             # restore file
             self.metadata_path = 'DATASET/emotion_classifier/train/Weibo_data_train_metadata.pkl'
             self.idx_input_path = 'DATASET/emotion_classifier/train/Weibo_data_train_idx_input.npy'        
         if self.purpose == 'FINETUNE':
+            self.data_separate_point = 200
             # self.origi_filename = args.original_file
             self.save_model_path = 'CKPT/emotion_classifier/emo_classify_finetune_model'
             self.metadata_path = 'DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl'
@@ -71,7 +73,8 @@ class EC_DataGenerator(object):
         batch_x = []
         batch_y = []
         for num in range(self.batch_size):
-            rand_idx = np.random.randint(0, high=self.data_size-3940)
+            pdb.set_trace()
+            rand_idx = np.random.randint(0, high=self.data_size-self.data_separate_point)
             batch_x.append(self.train_data[rand_idx])
             batch_y.append(self.train_data_emo[rand_idx])
         return np.array(batch_x), np.array(batch_y)
@@ -80,7 +83,7 @@ class EC_DataGenerator(object):
         batch_x = []
         batch_y = []
         for num in range(self.batch_size):
-            rand_idx = np.random.randint(self.data_size-3940, high=self.data_size)
+            rand_idx = np.random.randint(self.data_size-self.data_separate_point, high=self.data_size)
             batch_x.append(self.train_data[rand_idx])
             batch_y.append(self.train_data_emo[rand_idx])
         return np.array(batch_x), np.array(batch_y)        

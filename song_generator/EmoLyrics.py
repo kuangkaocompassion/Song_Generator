@@ -16,12 +16,14 @@ from random import sample
 import csv
 
 # example
-# TRAIN: python3 EmoLyrics.py -p TRAIN -fn jay_lyrics_notag_withEMO.csv 
-# USE:  python3 EmoLyrics.py -p TEST  
+# TRAIN emotion: python3 EmoLyrics.py -p TRAIN -t emotion -fn jay_lyrics_notag_withEMO.csv 
+# TRAIN baseline: python3 EmoLyrics.py -p TRAIN -t baseline -fn jay_lyrics_notag_withEMO.csv
+# USE:  python3 EmoLyrics.py -p USE  
 
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p","--purpose", help="purpose: TRAIN, USE", type=str)
+    parser.add_argument("-t","--type", help="type: emotion, baseline", type=str)    
     parser.add_argument("-fn", "--filename", help="name: training file", type=str)
     args = parser.parse_args()
     return args
@@ -107,12 +109,16 @@ class ELM_DataGenerator():
         return x_batches, y_batches, bx_emo 
 
 class EmoLyricsModel(object):
-    def __init__(self, purpose):
+    def __init__(self, args):
         # create Model for: TRAIN, TEST    
-        self.flag_test = False if purpose == 'TRAIN' else True
-        self.purpose = purpose
+        self.model_type = args.type
+        self.flag_test = False if args.purpose == 'TRAIN' else True
+        self.purpose = args.purpose
         # model's variable
-        self.NumClass = 7
+        if self.model_type == 'emotion':
+            self.NumClass = 7
+        elif self.model_type == 'baseline':
+            self.NumClass = 0        
         self.SizeVocab = 2262
         self.NumLayer = 2
         self.lr = 0.01 #learning rate
@@ -202,8 +208,11 @@ class EmoLyricsModel(object):
     
     def Model_Main(self):
         EncoOutput, EncoState = self.seq2seq_encoder(self.x_input, layer= self.NumLayer)
-        EncoState_m = self.modified_state(EncoState, self.x_emo_dist) # modified states
-        DecoOutput, DecoState = self.seq2seq_decoder(self.y_input, EncoState_m, layer= self.NumLayer)
+        if self.model_type == 'emotion':
+            EncoState_m = self.modified_state(EncoState, self.x_emo_dist) # modified states
+            DecoOutput, DecoState = self.seq2seq_decoder(self.y_input, EncoState_m, layer= self.NumLayer)
+        elif self.model_type == 'baseline':
+            DecoOutput, DecoState = self.seq2seq_decoder(self.y_input, EncoState, layer= self.NumLayer)
          # get first 30 words
         DecoOutput = DecoOutput[0:-1]
         # reshape decoder output
@@ -222,8 +231,11 @@ class EmoLyricsModel(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.cost)
 
 
-def ELM_train(model, data):
-    save_model_path = 'CKPT/song_generator/emo_lyrics_model'
+def ELM_train(model, data, args):
+    if args.type == 'emotion':
+        save_model_path = 'CKPT/song_generator/emo_lyrics_model'
+    elif args.type == 'baseline':
+        save_model_path = 'CKPT/song_generator/base_lyrics_model'
     epochs = 100
     number_of_epoch = 0
     init = tf.global_variables_initializer()
@@ -241,15 +253,19 @@ def ELM_train(model, data):
         # train:
         print('EPOCH:{} start!'.format(number_of_epoch))
         for number_of_batch in range(num_of_batch_per_epoch):
-            x_train, y_train, x_emo_train = data.next_batch()
-            # pdb.set_trace()
-            
-            feed_dict = {  
-                        model.x_input: x_train, \
-                        model.y_input: y_train, \
-                        model.x_emo_dist: x_emo_train
-                        }
-            
+            if args.type == 'emotion':
+                x_train, y_train, x_emo_train = data.next_batch()
+                feed_dict = {  
+                            model.x_input: x_train, 
+                            model.y_input: y_train, 
+                            model.x_emo_dist: x_emo_train
+                            }
+            elif args.type == 'baseline':
+                x_train, y_train, _ = data.next_batch()
+                feed_dict = {  
+                            model.x_input: x_train, 
+                            model.y_input: y_train, 
+                            }            
             _, cost = session.run([model.optimizer, model.cost], feed_dict )
             cost_total += cost
             print("cost:", cost)
@@ -260,8 +276,8 @@ def ELM_train(model, data):
         number_of_epoch += 1
 
 def ELM_sample(model):
-    char2id = DataGenerator.LoadObj('char2id_dict')
-    id2char = DataGenerator.LoadObj('id2char_dict')
+    char2id = ELM_DataGenerator.LoadObj('char2id_dict')
+    id2char = ELM_DataGenerator.LoadObj('id2char_dict')
     # pdb.set_trace()
     saver = tf.train.Saver()
     with tf.Session() as session:
@@ -296,12 +312,12 @@ def ELM_sample(model):
 if __name__ == '__main__':
     args = set_argparse()
     with tf.variable_scope('song_generator'):
-        Model = EmoLyricsModel(args.purpose)
+        Model = EmoLyricsModel(args)
     # pdb.set_trace()
     if args.purpose == 'TRAIN':
         path = 'TEST/' + args.filename 
         TrainData = ELM_DataGenerator(path)
-        ELM_train(Model, TrainData)
+        ELM_train(Model, TrainData, args)
     
     if args.purpose == 'USE':
         ELM_sample(Model)

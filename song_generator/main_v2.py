@@ -8,9 +8,12 @@ from EmoClassify import EmotionClassifier
 from EmoLyrics import EmoLyricsModel
 from EmoLyrics import ELM_DataGenerator
 
+# python3 main_v2.py -p USE -t emotion
+
 def set_argparse():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p","--purpose", help="purpose: TRAIN, FINETUNE", type=str)
+    parser.add_argument("-p","--purpose", help="purpose: TRAIN, FINETUNE, USE", type=str)
+    parser.add_argument("-t","--type", help="type: emotion, baseline", type=str)
     parser.add_argument("-n", "--name", help="name: process target csv file", type=str)    
     args = parser.parse_args()
     return args
@@ -43,7 +46,7 @@ saver_EC.restore(session_EC, 'CKPT/emotion_classifier/emo_classify_finetune_mode
 
 # restore song generator model
 with tf.variable_scope('song_generator'):
-    model_ELM = EmoLyricsModel('USE')
+    model_ELM = EmoLyricsModel(args)
 # pdb.set_trace()
 saver_ELM = tf.train.Saver([v for v in tf.global_variables() if 'song_generator' in v.name])
 session_ELM = tf.Session()
@@ -56,8 +59,8 @@ id2token = metadata['idx2w']
 token2id_key = list(token2id.keys())
 
 # generator: dictionary
-char2id = ELM_DataGenerator.LoadObj('char2id_dict')
-id2char = ELM_DataGenerator.LoadObj('id2char_dict')
+char2id = ELM_DataGenerator.LoadObj('emo_char2id_dict')
+id2char = ELM_DataGenerator.LoadObj('emo_id2char_dict')
 # pdb.set_trace()
 for line_num in range(30):
     if line_num == 0:
@@ -80,7 +83,6 @@ for line_num in range(30):
                  model_EC.x: classify_input
                 }
     emo_dist = session_EC.run([model_EC.softmax_result], feed_dict) 
-    sentence_emo = np.array([0.0733089,0.228538,2.36306e-09,0.258303,0.188573,0.251277,2.32927e-08])
     sentence_idx = [char2id[c] for c in sentence]
     
     sentence_idx += [0 for i in range( 30 - len(sentence_idx))]
@@ -88,7 +90,7 @@ for line_num in range(30):
     feed_dict_ = {
                  model_ELM.x_input: [sentence_idx],
                  model_ELM.y_input: [y_fake],
-                 model_ELM.x_emo_dist: [sentence_emo],
+                 model_ELM.x_emo_dist: emo_dist[0],
                 }
     output_idx = session_ELM.run([model_ELM.DecoWord_idx], feed_dict_)
     output_sentence = [id2char[c] for c in output_idx[0]]

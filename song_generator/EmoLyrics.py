@@ -18,7 +18,8 @@ import csv
 # example
 # TRAIN emotion: python3 EmoLyrics.py -p TRAIN -t emotion -fn jay_lyrics_notag_withEMO.csv 
 # TRAIN baseline: python3 EmoLyrics.py -p TRAIN -t baseline -fn jay_lyrics_notag_withEMO.csv
-# USE:  python3 EmoLyrics.py -p USE  
+# USE emotion:  python3 EmoLyrics.py -p USE -t emotion
+# USE baseline:  python3 EmoLyrics.py -p USE -t baseline
 
 def set_argparse():
     parser = argparse.ArgumentParser()
@@ -30,7 +31,7 @@ def set_argparse():
 
 class ELM_DataGenerator():
 
-    def __init__(self, datafiles):
+    def __init__(self, datafiles, args):
         self.seq_length = 30
         self.batch_size = 100
         
@@ -46,8 +47,12 @@ class ELM_DataGenerator():
         self.char2id_dict = {w: i for i, w in enumerate(self.words)}
         self.id2char_dict = {i: w for i, w in enumerate(self.words)}
         # save char2id_dict, id2char_dict
-        self.SaveObj(self.char2id_dict, 'char2id_dict')
-        self.SaveObj(self.id2char_dict, 'id2char_dict')
+        if args.type == 'emotion':
+            self.SaveObj(self.char2id_dict, 'emo_char2id_dict')
+            self.SaveObj(self.id2char_dict, 'emo_id2char_dict')
+        elif args.type == 'baseline':
+            self.SaveObj(self.char2id_dict, 'base_char2id_dict')
+            self.SaveObj(self.id2char_dict, 'base_id2char_dict')           
         # pointer position to generate current batch
         self._pointer = 0
     
@@ -276,8 +281,8 @@ def ELM_train(model, data, args):
         number_of_epoch += 1
 
 def ELM_sample(model):
-    char2id = ELM_DataGenerator.LoadObj('char2id_dict')
-    id2char = ELM_DataGenerator.LoadObj('id2char_dict')
+    char2id = ELM_DataGenerator.LoadObj('emo_char2id_dict')
+    id2char = ELM_DataGenerator.LoadObj('emo_id2char_dict')
     # pdb.set_trace()
     saver = tf.train.Saver()
     with tf.Session() as session:
@@ -309,6 +314,36 @@ def ELM_sample(model):
         print(output_sentence_w)
     return 0
 
+def BASE_sample(model):
+    char2id = ELM_DataGenerator.LoadObj('base_char2id_dict')
+    id2char = ELM_DataGenerator.LoadObj('base_id2char_dict')
+    # pdb.set_trace()
+    saver = tf.train.Saver()
+    with tf.Session() as session:
+        # ckpt = tf.train.latest_checkpoint('CKPT/song_generator/')
+        # model(good performance): 30, 45, 75 epochs
+        # model(over fitting): 60, 90 epochs
+        ckpt = 'CKPT/song_generator/base_lyrics_model-75'
+        print(ckpt)
+        saver.restore(session, ckpt)
+        for line_num in range(30):
+            if line_num == 0:
+                sentence = u'你要离开我知道很简单'
+            sentence_ = [char2id[c] for c in sentence]
+            sentence_ += [0 for i in range( model.NumInput - len(sentence))]
+
+            y_fake = [0 for i in range(model.NumInput)]
+            feed_dict = {
+                         model.x_input: [sentence_],
+                         model.y_input: [y_fake],
+                        }
+            output_idx = session.run([model.DecoWord_idx], feed_dict)
+            output_sentence = [id2char[c] for c in output_idx[0]]
+            output_sentence_w = ''.join(output_sentence)
+            sentence = output_sentence_w
+            print(output_sentence_w)
+    return 0
+
 if __name__ == '__main__':
     args = set_argparse()
     with tf.variable_scope('song_generator'):
@@ -316,11 +351,14 @@ if __name__ == '__main__':
     # pdb.set_trace()
     if args.purpose == 'TRAIN':
         path = 'TEST/' + args.filename 
-        TrainData = ELM_DataGenerator(path)
+        TrainData = ELM_DataGenerator(path, args)
         ELM_train(Model, TrainData, args)
     
     if args.purpose == 'USE':
-        ELM_sample(Model)
+        if args.type == 'emotion':
+            ELM_sample(Model)
+        elif args.type == 'baseline':
+            BASE_sample(Model)
 
 
 

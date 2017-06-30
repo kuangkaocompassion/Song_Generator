@@ -93,9 +93,9 @@ class EmotionClassifier(object):
         # pdb.set_trace()
         self.purpose = args.purpose
 
-        if self.purpose == 'USE':
-            self.use_init(args)
-            self.filename = args.name
+        # if self.purpose == 'USE':
+        #     self.use_init(args)
+        #     self.filename = args.name
 
         self.EMOTION_DIC = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4:'like', 5:'sadness', 6:'surprise'}
         self.classification_number = 7

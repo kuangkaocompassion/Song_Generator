@@ -10,6 +10,7 @@ from EmoLyrics import ELM_DataGenerator
 
 # python3 main_v2.py -p USE -t emotion
 
+# purpose: 
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p","--purpose", help="purpose: TRAIN, FINETUNE, USE", type=str)
@@ -50,7 +51,7 @@ with tf.variable_scope('song_generator'):
 # pdb.set_trace()
 saver_ELM = tf.train.Saver([v for v in tf.global_variables() if 'song_generator' in v.name])
 session_ELM = tf.Session()
-saver_ELM.restore(session_ELM, 'CKPT/song_generator/emo_lyrics_model-60')
+saver_ELM.restore(session_ELM, 'CKPT/song_generator/emo_lyrics_model-45')
 
 # classifier: dictionary
 metadata = LoadMetadata('DATASET/emotion_classifier/finetune/FineTune_Data_Jay-1_finetune_metadata.pkl')

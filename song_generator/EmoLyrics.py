@@ -29,6 +29,7 @@ def set_argparse():
     args = parser.parse_args()
     return args
 
+# data generator for emotion lyrics model
 class ELM_DataGenerator():
 
     def __init__(self, datafiles, args):
@@ -40,7 +41,7 @@ class ELM_DataGenerator():
         
         self.total_len = len(self.sentence)
         self.words = list(self.CharSet(self.sentence))
-        self.words = ["", "unk", "go"] + self.words
+        self.words = ["", "go", "unk"] + self.words
         # vocabulary
         self.vocab_size = len(self.words)  # vocabulary size
         # print('Vocabulary Size: ', self.vocab_size)
@@ -57,11 +58,11 @@ class ELM_DataGenerator():
         self._pointer = 0
     
     def SaveObj(self, obj, name):
-        with open('CKPT/song_generator/dict/' + name + '.pkl', 'wb') as f:
+        with open('CKPT/song_generator/dict/' + name +'_'+ time.strftime("%Y%m%d-%H%M%S") + '.pickle', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
     
-    def LoadObj(name):
-        with open('CKPT/song_generator/dict/' + name + '.pkl', 'rb') as f: 
+    def LoadObj(name, date):
+        with open('CKPT/song_generator/dict/' + name +'_'+ date +'.pickle', 'rb') as f: 
             return pickle.load(f)      
 
     def GetSentence(self, csvpath):
@@ -114,11 +115,14 @@ class ELM_DataGenerator():
         return x_batches, y_batches, bx_emo 
 
 class EmoLyricsModel(object):
-    def __init__(self, args):
-        # create Model for: TRAIN, TEST    
+    def __init__(self, args):    
+        # info in args: type, purpose, 
+        # type: emotion, baseline
+        # purpose: TRAIN, USE
         self.model_type = args.type
-        self.flag_test = False if args.purpose == 'TRAIN' else True
         self.purpose = args.purpose
+        self.flag_test = False if self.purpose == 'TRAIN' else True
+        
         # model's variable
         if self.model_type == 'emotion':
             self.NumClass = 7
@@ -131,22 +135,17 @@ class EmoLyricsModel(object):
         self.SizeBatch = 100
         self.NumHidden = 256
 
+        # create graph
         self.x_input, self.y_input, self.x_emo_dist, \
         self.target, self.weight, self.bias, self.embedding = self.Model_init()
-        # pdb.set_trace()
         self.Model_Main()
-
-    """
-    MODEL STRUCTURE
-    """
-    
+ 
     # initialize: x, y x_emo_dist, target, weight, bias, embedding
     def Model_init(self):
         x_input = tf.placeholder(tf.int32, [None, self.NumInput]) # x
         y_input = tf.placeholder(tf.int32, [None, self.NumInput]) # y
         # emotion distribution of x_input
-        x_emo_dist = tf.placeholder(tf.float32, [None, self.NumClass]) 
-        
+        x_emo_dist = tf.placeholder(tf.float32, [None, self.NumClass])         
         target = tf.cast(y_input, tf.int32)
         
         # weights
@@ -224,8 +223,8 @@ class EmoLyricsModel(object):
         DecoOutput_r = tf.reshape(tf.concat(DecoOutput, 1), [-1, self.NumHidden+ self.NumClass])
         DecoLogit = tf.matmul(DecoOutput_r, self.weight['EmoDecoderOut']) + self.bias['EmoDecoderOut']
 
-        DecoProb = tf.nn.softmax(DecoLogit)
-        self.DecoWord_idx = tf.argmax(DecoProb, 1)
+        self.DecoProb = tf.nn.softmax(DecoLogit)
+        self.DecoWord_idx = tf.argmax(self.DecoProb, 1)
 
         loss = legacy_seq2seq.sequence_loss_by_example(
                         [DecoLogit],
@@ -237,10 +236,13 @@ class EmoLyricsModel(object):
 
 
 def ELM_train(model, data, args):
+    # save path
     if args.type == 'emotion':
-        save_model_path = 'CKPT/song_generator/emo_lyrics_model'
+        save_model_path = 'CKPT/song_generator/emo_lyrics_model_'+ time.strftime("%Y%m%d-%H%M%S")
     elif args.type == 'baseline':
-        save_model_path = 'CKPT/song_generator/base_lyrics_model'
+        save_model_path = 'CKPT/song_generator/base_lyrics_model_'+ time.strftime("%Y%m%d-%H%M%S")
+    
+    # training variables 
     epochs = 100
     number_of_epoch = 0
     init = tf.global_variables_initializer()
@@ -254,11 +256,11 @@ def ELM_train(model, data, args):
         cost_total = 0
         num_of_batch_per_epoch = int(data.total_len//data.batch_size)
 
-        #-------
         # train:
         print('EPOCH:{} start!'.format(number_of_epoch))
         for number_of_batch in range(num_of_batch_per_epoch):
             if args.type == 'emotion':
+                # generate data from ELM_DataGenerator
                 x_train, y_train, x_emo_train = data.next_batch()
                 feed_dict = {  
                             model.x_input: x_train, 
@@ -274,22 +276,26 @@ def ELM_train(model, data, args):
             _, cost = session.run([model.optimizer, model.cost], feed_dict )
             cost_total += cost
             print("cost:", cost)
-        print('EPOCH:{}, training_loss:{:4f}'.format(number_of_epoch, 
+        print('EPOCH:{}, training_loss:{:4f}'.format(number_of_epoch, \
                                                      cost_total/num_of_batch_per_epoch ))
         if number_of_epoch%15 == 0:
             saver.save(session, save_model_path, global_step=number_of_epoch)
         number_of_epoch += 1
 
-def ELM_sample(model):
-    char2id = ELM_DataGenerator.LoadObj('emo_char2id_dict')
-    id2char = ELM_DataGenerator.LoadObj('emo_id2char_dict')
+def BeamSearch(arr, candidate):
+    candidate_idx = arr.argsort()[-3:][::-1]
+
+
+def ELM_sample(model, model_num, date):
+    char2id = ELM_DataGenerator.LoadObj('emo_char2id_dict', date)
+    id2char = ELM_DataGenerator.LoadObj('emo_id2char_dict', date)
     # pdb.set_trace()
     saver = tf.train.Saver()
     with tf.Session() as session:
         # ckpt = tf.train.latest_checkpoint('CKPT/song_generator/')
         # model(good performance): 30, 45, 75 epochs
         # model(over fitting): 60, 90 epochs
-        ckpt = 'CKPT/song_generator/emo_lyrics_model-90'
+        ckpt = 'CKPT/song_generator/emo_lyrics_model_'+ date + '-' + model_num 
         print(ckpt)
         saver.restore(session, ckpt)
         sentence = u'你要离开我知道很简单'
@@ -305,30 +311,50 @@ def ELM_sample(model):
                      model.y_input: [y_fake],\
                      model.x_emo_dist: [sentence_emo]
                     }
-        output_idx = session.run([model.DecoWord_idx], feed_dict)
-        output_sentence = [id2char[c] for c in output_idx[0]]
-        output_sentence_w = ''.join(output_sentence)
-        print(sentence)
-        print(sentence_)
-        print(output_idx)
-        print(output_sentence_w)
+        output_softmax = session.run([model.DecoProb[0]], feed_dict)
+        idx = output_softmax[0].argsort()[-3:][::-1]
+
+        CandidateIdx = [[i] for i in idx]
+        CandidateProb = [np.log(i) for i in output_softmax[0][idx]]
+        for num_char in range(30):
+            prob_list = []
+            candidate_list = []            
+            for num in range(3):
+                y_fake = [ CandidateIdx[num][-1] ] + [0 for i in range(model.NumInput - 1)]
+                feed_dict[model.y_input] = [y_fake]
+                output_softmax = session.run([model.DecoProb[1]], feed_dict)
+                idx = output_softmax[0].argsort()[-3:][::-1]
+                prob = output_softmax[0][idx]
+                for num_ in range(3):
+                    prob_list.append(np.log(prob[num_]) + CandidateProb[num])
+                    candidate_list.append(CandidateIdx[num] + [idx[num_]])
+            top_idx = sorted(range(len(prob_list)), key=lambda i: prob_list[i])[-3:]
+            CandidateIdx = [candidate_list[i] for i in top_idx]
+            CandidateProb = [prob_list[i] for i in top_idx]
+          
+        # output_sentence = [id2char[c] for c in output_idx[0]]
+        # output_sentence_w = ''.join(output_sentence)
+        # print(sentence)
+        # print(sentence_)
+        # print(output_idx)
+        # print(output_sentence_w)
     return 0
 
-def BASE_sample(model):
-    char2id = ELM_DataGenerator.LoadObj('base_char2id_dict')
-    id2char = ELM_DataGenerator.LoadObj('base_id2char_dict')
+def BASE_sample(model, model_num, date):
+    char2id = ELM_DataGenerator.LoadObj('emo_char2id_dict', date)
+    id2char = ELM_DataGenerator.LoadObj('emo_id2char_dict', date)
     # pdb.set_trace()
     saver = tf.train.Saver()
     with tf.Session() as session:
         # ckpt = tf.train.latest_checkpoint('CKPT/song_generator/')
         # model(good performance): 30, 45, 75 epochs
         # model(over fitting): 60, 90 epochs
-        ckpt = 'CKPT/song_generator/base_lyrics_model-75'
+        ckpt = 'CKPT/song_generator/base_lyrics_model_'+ date + '-' + model_num 
         print(ckpt)
         saver.restore(session, ckpt)
         for line_num in range(30):
             if line_num == 0:
-                sentence = u'你要离开我知道很简单'
+                sentence = u'很简单'
             sentence_ = [char2id[c] for c in sentence]
             sentence_ += [0 for i in range( model.NumInput - len(sentence))]
 
@@ -348,27 +374,16 @@ if __name__ == '__main__':
     args = set_argparse()
     with tf.variable_scope('song_generator'):
         Model = EmoLyricsModel(args)
-    # pdb.set_trace()
+
     if args.purpose == 'TRAIN':
         path = 'TEST/' + args.filename 
         TrainData = ELM_DataGenerator(path, args)
         ELM_train(Model, TrainData, args)
     
     if args.purpose == 'USE':
+        date = input("DATE-TIME (form:20120515-155045):")
+        model_num = input("Model's Num:")
         if args.type == 'emotion':
-            ELM_sample(Model)
+            ELM_sample(Model, model_num, date)
         elif args.type == 'baseline':
-            BASE_sample(Model)
-
-
-
-
-
-
-
-
-
-
-
-
-
+            BASE_sample(Model, model_num, date)
